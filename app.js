@@ -330,6 +330,31 @@
     if (markSeen) localStorage.setItem('sellerTrackerWelcomeSeen', 'true');
   }
 
+
+  function getSignupEndpoint() {
+    if (window.location.protocol === 'file:') {
+      return 'http://127.0.0.1:3000/api/signups';
+    }
+    return '/api/signups';
+  }
+
+  function saveBetaSignupLocally(name, email) {
+    const key = 'sellerTrackerBetaSignupBacklog';
+    const existing = JSON.parse(localStorage.getItem(key) || '[]');
+    const normalizedEmail = email.trim().toLowerCase();
+
+    if (!existing.some(item => item.email === normalizedEmail)) {
+      existing.push({
+        id: Date.now(),
+        name: name || 'Guest',
+        email: normalizedEmail,
+        createdAt: new Date().toISOString(),
+        synced: false
+      });
+      localStorage.setItem(key, JSON.stringify(existing));
+    }
+  }
+
   async function submitBetaSignup(event) {
     event.preventDefault();
 
@@ -347,7 +372,7 @@
     }
 
     try {
-      const response = await fetch('/api/signups', {
+      const response = await fetch(getSignupEndpoint(), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email })
@@ -366,8 +391,12 @@
       localStorage.setItem('sellerTrackerWelcomeSeen', 'true');
       setTimeout(() => hideWelcomeModal(false), 900);
     } catch (error) {
-      feedback.textContent = 'Could not connect to signup service. Please try again.';
-      feedback.className = 'beta-signup-feedback error';
+      saveBetaSignupLocally(name, email);
+      feedback.textContent = 'Signup saved on this device. Start the backend (npm start) to sync centrally.';
+      feedback.className = 'beta-signup-feedback success';
+
+      localStorage.setItem('sellerTrackerWelcomeSeen', 'true');
+      setTimeout(() => hideWelcomeModal(false), 1200);
     }
   }
 

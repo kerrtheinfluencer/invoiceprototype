@@ -32,7 +32,7 @@ Use this quick checklist after UI or logic changes.
 ## Beta Signup + Backend
 - [ ] Run `npm start` and open `http://localhost:3000`.
 - [ ] Confirm welcome beta modal appears on first visit.
-- [ ] Submit name + email and confirm success message.
+- [ ] Submit name + email and confirm success message (or local-save success if backend is offline).
 - [ ] Verify `beta-signups.json` is created/updated with the new signup record.
 - [ ] Verify protected signup report works with Basic Auth (`kxrr1` / `Iamsuperman2021`) using:
       `curl -u kxrr1:Iamsuperman2021 http://localhost:3000/api/signups`

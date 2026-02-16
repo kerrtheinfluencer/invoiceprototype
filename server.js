@@ -21,8 +21,14 @@ const mimeTypes = {
   '.ico': 'image/x-icon'
 };
 
-function sendJson(res, status, body) {
-  res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8' });
+function sendJson(res, status, body, extraHeaders = {}) {
+  res.writeHead(status, {
+    'Content-Type': 'application/json; charset=utf-8',
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    ...extraHeaders
+  });
   res.end(JSON.stringify(body));
 }
 
@@ -77,12 +83,21 @@ function serveStatic(req, res, pathname) {
 
   const ext = path.extname(fullPath).toLowerCase();
   const mime = mimeTypes[ext] || 'application/octet-stream';
-  res.writeHead(200, { 'Content-Type': mime });
+  res.writeHead(200, { 'Content-Type': mime, 'Access-Control-Allow-Origin': '*' });
   fs.createReadStream(fullPath).pipe(res);
 }
 
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host}`);
+
+  if (req.method === 'OPTIONS' && url.pathname.startsWith('/api/')) {
+    res.writeHead(204, {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+    });
+    return res.end();
+  }
 
   if (req.method === 'POST' && url.pathname === '/api/signups') {
     try {
@@ -117,11 +132,7 @@ const server = http.createServer(async (req, res) => {
 
   if (req.method === 'GET' && url.pathname === '/api/signups') {
     if (!isAuthorized(req)) {
-      res.writeHead(401, {
-        'Content-Type': 'application/json; charset=utf-8',
-        'WWW-Authenticate': 'Basic realm="Beta Signups"'
-      });
-      return res.end(JSON.stringify({ error: 'Authentication required' }));
+      return sendJson(res, 401, { error: 'Authentication required' }, { 'WWW-Authenticate': 'Basic realm="Beta Signups"' });
     }
 
     const signups = readSignups();
