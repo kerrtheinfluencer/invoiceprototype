@@ -72,7 +72,8 @@
         <option>Paid - Card</option>
       </select>
 
-      <button type="submit" class="save-order-btn">Save Order</button>
+      <button type="submit" class="save-order-btn" id="saveOrderBtn">Save Order</button>
+      <button type="button" id="cancelEditBtn" class="cancel-edit-btn hidden">Cancel Edit</button>
 
       <div id="feedback" class="feedback"></div>
     </form>
@@ -81,8 +82,45 @@
   <div class="card">
     <h2>Saved Orders</h2>
     <p id="totalRevenue" class="total-revenue">Total Revenue: J$0.00 | Orders: 0</p>
-    <button onclick="exportCSV()" class="export-btn">Export All to CSV</button>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <span>Today’s Revenue</span>
+        <strong id="todayRevenue">J$0.00</strong>
+      </div>
+      <div class="stat-card">
+        <span>Pending Payments</span>
+        <strong id="pendingPayments">0</strong>
+      </div>
+      <div class="stat-card">
+        <span>Top Platform</span>
+        <strong id="topPlatform">—</strong>
+      </div>
+    </div>
+
+    <div class="tools-row">
+      <input type="text" id="searchOrders" placeholder="Search by customer, phone, platform, item..." class="search-input">
+      <select id="dateFilter" class="date-filter">
+        <option value="all">All Dates</option>
+        <option value="today">Today</option>
+        <option value="week">Last 7 Days</option>
+        <option value="month">Last 30 Days</option>
+      </select>
+      <button onclick="exportCSV()" class="export-btn">Export All to CSV</button>
+    </div>
+
     <div id="orders-list" class="orders-list"></div>
+  </div>
+</div>
+
+<div id="confirmModal" class="confirm-modal" aria-hidden="true">
+  <div class="confirm-card">
+    <h3>Confirm Delete</h3>
+    <p id="confirmMessage">Are you sure you want to delete this order?</p>
+    <div class="confirm-actions">
+      <button id="cancelDeleteBtn" type="button" class="cancel-btn">Cancel</button>
+      <button id="confirmDeleteBtn" type="button" class="danger-btn">Delete Order</button>
+    </div>
   </div>
 </div>
 

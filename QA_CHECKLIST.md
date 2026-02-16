@@ -28,3 +28,11 @@ Use this quick checklist after UI or logic changes.
 - [ ] Refresh the page.
 - [ ] Confirm orders remain visible and total revenue is preserved.
 - [ ] Confirm saved business settings are still populated.
+
+
+## Order Management Enhancements
+- [ ] Edit a saved order and confirm values load into the form and save back as updated.
+- [ ] Delete a saved order and confirm the delete confirmation modal appears before removal.
+- [ ] Use search to find an order by customer name or item text.
+- [ ] Switch date filter (Today / Last 7 Days / Last 30 Days) and confirm results update.
+- [ ] Confirm dashboard cards update: Today's Revenue, Pending Payments, and Top Platform.
