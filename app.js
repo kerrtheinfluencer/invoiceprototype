@@ -1,4 +1,4 @@
-const { jsPDF } = window.jspdf;
+const jsPDFCtor = window.jspdf?.jsPDF || null;
 
 let orders = JSON.parse(localStorage.getItem('jamaicaSalesOrders')) || [];
 let businessInfo = JSON.parse(localStorage.getItem('businessInfo')) || {
@@ -214,8 +214,13 @@ function renderOrders() {
 }
 
 function createReceiptDocument(index) {
+  if (!jsPDFCtor) {
+    alert('PDF features are unavailable right now. Please check your internet connection and reload.');
+    return null;
+  }
+
   const order = orders[index];
-  const doc = new jsPDF();
+  const doc = new jsPDFCtor();
   let y = 20;
 
   if (businessInfo.logoData) {
@@ -274,12 +279,15 @@ function createReceiptDocument(index) {
 }
 
 function generatePDF(index) {
-  createReceiptDocument(index).save(`receipt_${index + 1}.pdf`);
+  const doc = createReceiptDocument(index);
+  if (!doc) return;
+  doc.save(`receipt_${index + 1}.pdf`);
 }
 
 async function shareReceipt(index) {
   const order = orders[index];
   const doc = createReceiptDocument(index);
+  if (!doc) return;
   const pdfBlob = doc.output('blob');
   const pdfFile = new File([pdfBlob], `receipt_${index + 1}.pdf`, { type: 'application/pdf' });
 
