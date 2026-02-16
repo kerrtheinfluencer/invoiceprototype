@@ -104,7 +104,7 @@
         Platform: ${order.platform} | Status: ${order.paymentStatus}<br>
         Total: J$${order.total.toFixed(2)}<br>
         <div class="btn-group">
-          <button class="download-btn" onclick="generatePDF(${index})">Download PDF</button>
+          <button onclick="generatePDF(${index})" style="background:var(--green-med);">Download PDF</button>
           <button class="share-btn" onclick="shareReceipt(${index})">Share Receipt</button>
         </div>
       `;
@@ -309,78 +309,8 @@
     feedback.textContent = 'Order saved successfully!';
     feedback.className = 'feedback success';
   });
-
-  function showWelcomeModalIfFirstTime() {
-    const hasSeenWelcome = localStorage.getItem('sellerTrackerWelcomeSeen');
-    if (hasSeenWelcome) return;
-
-    const modal = document.getElementById('welcomeModal');
-    if (!modal) return;
-
-    modal.style.display = 'flex';
-    modal.setAttribute('aria-hidden', 'false');
-  }
-
-  function hideWelcomeModal(markSeen = true) {
-    const modal = document.getElementById('welcomeModal');
-    if (!modal) return;
-
-    modal.style.display = 'none';
-    modal.setAttribute('aria-hidden', 'true');
-    if (markSeen) localStorage.setItem('sellerTrackerWelcomeSeen', 'true');
-  }
-
-  async function submitBetaSignup(event) {
-    event.preventDefault();
-
-    const nameInput = document.getElementById('betaName');
-    const emailInput = document.getElementById('betaEmail');
-    const feedback = document.getElementById('betaSignupFeedback');
-
-    const name = (nameInput?.value || '').trim();
-    const email = (emailInput?.value || '').trim();
-
-    if (!email || !email.includes('@')) {
-      feedback.textContent = 'Please enter a valid email address.';
-      feedback.className = 'beta-signup-feedback error';
-      return;
-    }
-
-    try {
-      const response = await fetch('/api/signups', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email })
-      });
-
-      const result = await response.json();
-      if (!response.ok) {
-        throw new Error(result.error || 'Could not submit signup');
-      }
-
-      feedback.textContent = result.duplicate
-        ? 'You are already on the beta list. Thank you!'
-        : 'Thanks for joining the beta list!';
-      feedback.className = 'beta-signup-feedback success';
-
-      localStorage.setItem('sellerTrackerWelcomeSeen', 'true');
-      setTimeout(() => hideWelcomeModal(false), 900);
-    } catch (error) {
-      feedback.textContent = 'Could not connect to signup service. Please try again.';
-      feedback.className = 'beta-signup-feedback error';
-    }
-  }
-
   // Init
   addItemRow();
   updateDashboard();
   renderOrders();
   document.querySelectorAll('input[type=number]').forEach(el => el.addEventListener('input', updateSummary));
-
-  const betaSignupForm = document.getElementById('betaSignupForm');
-  if (betaSignupForm) betaSignupForm.addEventListener('submit', submitBetaSignup);
-
-  const welcomeDismiss = document.getElementById('welcomeDismiss');
-  if (welcomeDismiss) welcomeDismiss.addEventListener('click', () => hideWelcomeModal(true));
-
-  showWelcomeModalIfFirstTime();
