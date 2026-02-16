@@ -122,6 +122,21 @@
       box-shadow: 0 0 0 3px rgba(212,175,55,0.15);
     }
 
+    .file-input-wrapper {
+      position: relative;
+      overflow: hidden;
+      display: inline-block;
+    }
+
+    .file-input-wrapper input[type="file"] {
+      font-size: 100px;
+      position: absolute;
+      left: 0;
+      top: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+
     .btn {
       background: var(--green-dark);
       color: white;
@@ -250,12 +265,23 @@
       width: 90%;
       max-width: 500px;
       box-shadow: var(--shadow);
+      max-height: 90vh;
+      overflow-y: auto;
     }
 
     #closeSettings {
       background: var(--red);
       width: auto;
       padding: 12px 24px;
+    }
+
+    #logoPreview {
+      max-width: 150px;
+      max-height: 150px;
+      margin: 12px auto;
+      display: block;
+      border-radius: 8px;
+      border: 1px solid #444;
     }
   </style>
 </head>
@@ -264,7 +290,7 @@
 <div class="container">
   <header>
     <h1>Jamaica Seller Tracker</h1>
-    <p class="intro">Quick sales • PDF receipts with your branding • CSV export</p>
+    <p class="intro">Quick sales entry • PDF receipts with your branding • CSV export</p>
     <button class="menu-btn" onclick="document.getElementById('businessSettings').style.display='flex'">
       ⚙️ Business Settings
     </button>
@@ -346,11 +372,18 @@
     <label>Business Email</label>
     <input type="email" id="bizEmail" placeholder="e.g. kxrr1business@gmail.com">
 
+    <label>Business Social Handle (e.g. @kxrr1wigs)</label>
+    <input type="text" id="bizSocial" placeholder="@yourhandle">
+
     <label>WhatsApp / Contact</label>
     <input type="tel" id="bizPhone" placeholder="e.g. +1-876-555-1234">
 
-    <label>Extra Receipt Note (optional)</label>
-    <textarea id="bizNote" rows="2" placeholder="e.g. Thank you! Follow us @wtff_zone"></textarea>
+    <label>Upload Logo (PNG/JPG)</label>
+    <input type="file" id="bizLogoUpload" accept="image/*">
+    <img id="logoPreview" src="" alt="Logo Preview" style="display:none; max-width:150px; margin:12px auto; border-radius:8px; border:1px solid #444;">
+
+    <label>Extra Receipt Note / Recommendation</label>
+    <textarea id="bizNote" rows="2" placeholder="e.g. Thank you! Follow us for exclusive deals"></textarea>
 
     <button class="btn" onclick="saveBusinessInfo()">Save Business Info</button>
     <button id="closeSettings" class="btn" onclick="document.getElementById('businessSettings').style.display='none'">Close</button>
@@ -363,25 +396,51 @@
   let businessInfo = JSON.parse(localStorage.getItem('businessInfo')) || {
     name: 'Your Business Name',
     email: '',
+    social: '',
     phone: '',
-    note: 'Thank you for your order! Follow us @wtff_zone'
+    logoData: '',  // base64 data URL
+    note: 'Thank you for your order!'
   };
 
   // Load saved business info into form
   document.getElementById('bizName').value = businessInfo.name || '';
   document.getElementById('bizEmail').value = businessInfo.email || '';
+  document.getElementById('bizSocial').value = businessInfo.social || '';
   document.getElementById('bizPhone').value = businessInfo.phone || '';
   document.getElementById('bizNote').value = businessInfo.note || '';
+
+  // Show preview if logo exists
+  if (businessInfo.logoData) {
+    document.getElementById('logoPreview').src = businessInfo.logoData;
+    document.getElementById('logoPreview').style.display = 'block';
+  }
+
+  // Handle logo upload
+  document.getElementById('bizLogoUpload').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(event) {
+      const dataUrl = event.target.result;
+      document.getElementById('logoPreview').src = dataUrl;
+      document.getElementById('logoPreview').style.display = 'block';
+      businessInfo.logoData = dataUrl; // temporary, save later
+    };
+    reader.readAsDataURL(file);
+  });
 
   function saveBusinessInfo() {
     businessInfo = {
       name: document.getElementById('bizName').value.trim() || 'Your Business Name',
       email: document.getElementById('bizEmail').value.trim() || '',
+      social: document.getElementById('bizSocial').value.trim() || '',
       phone: document.getElementById('bizPhone').value.trim() || '',
+      logoData: businessInfo.logoData || '', // keep uploaded logo
       note: document.getElementById('bizNote').value.trim() || 'Thank you for your order!'
     };
     localStorage.setItem('businessInfo', JSON.stringify(businessInfo));
-    alert('Business information saved! It will now appear on all receipts.');
+    alert('Business information saved! Your logo and details will appear on all receipts.');
     document.getElementById('businessSettings').style.display = 'none';
   }
 
@@ -505,6 +564,16 @@
     const doc = new jsPDF();
     let y = 20;
 
+    // Logo (from local base64 if uploaded)
+    if (businessInfo.logoData) {
+      try {
+        doc.addImage(businessInfo.logoData, 'PNG', 80, y, 50, 50); // centered, ~100px wide
+        y += 55;
+      } catch (e) {
+        // Skip if image fails
+      }
+    }
+
     // Business header
     doc.setFontSize(18);
     doc.setTextColor(0, 100, 0);
@@ -514,6 +583,7 @@
     doc.setTextColor(0);
     if (businessInfo.email) doc.text(`Email: ${businessInfo.email}`, 105, y, { align: "center" });
     if (businessInfo.phone) doc.text(`WhatsApp: ${businessInfo.phone}`, 105, y += 6, { align: "center" });
+    if (businessInfo.social) doc.text(`Follow us: ${businessInfo.social}`, 105, y += 6, { align: "center" });
     y += 10;
 
     doc.setFontSize(16);
@@ -545,7 +615,11 @@
 
     doc.setFontSize(10);
     doc.setTextColor(0);
-    doc.text(businessInfo.note, 105, y += 15, { align: "center" });
+    let receiptNote = businessInfo.note;
+    if (businessInfo.social) {
+      receiptNote = `Thank you! Follow us on ${businessInfo.social} for exclusive deals & updates!`;
+    }
+    doc.text(receiptNote, 105, y += 15, { align: "center" });
 
     doc.save(`receipt_${index+1}_${order.customerName.replace(/\s/g,'_')}.pdf`);
   }
