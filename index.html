@@ -1,94 +1,210 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Jamaica Seller Tracker - Visible Feedback</title>
-  <!-- Stable jsPDF CDN -->
+  <title>Smart Jamaica Seller Tracker</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'premium-green': '#0f5132',
+            'premium-dark': '#0a2f1e',
+            'accent-gold': '#d4af37',
+            'card-bg': 'rgba(255, 255, 255, 0.05)',
+          },
+          backdropBlur: { xs: '2px' },
+          boxShadow: {
+            'premium': '0 20px 40px -10px rgba(0, 0, 0, 0.4)',
+            'glow': '0 0 30px rgba(212, 175, 55, 0.15)',
+          },
+        }
+      }
+    }
+  </script>
+
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+
   <style>
-    body { font-family: Arial, sans-serif; margin: 20px; background: #f8f9fa; color: #333; }
-    h1 { color: #006400; text-align: center; }
-    .section { background: white; padding: 20px; margin: 20px 0; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-    label { display: block; margin: 10px 0 5px; font-weight: bold; }
-    input, select, textarea { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-    button { background: #006400; color: white; padding: 12px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 1.1em; }
-    button:hover { background: #004d00; }
-    .item-row { display: flex; gap: 10px; margin-bottom: 10px; }
-    .item-row input { flex: 1; }
-    .remove { background: #c00 !important; flex: 0 0 50px; }
-    #summary { font-weight: bold; color: #006400; margin: 15px 0; font-size: 1.2em; }
-    .feedback { font-weight: bold; padding: 10px; margin: 10px 0; border-radius: 4px; min-height: 20px; }
-    .success { background: #d4edda; color: #155724; }
-    .error { background: #f8d7da; color: #721c24; }
-    .order-item { background: #f1f3f5; padding: 15px; margin: 15px 0; border-radius: 6px; }
+    .conditional-section {
+      max-height: 0;
+      opacity: 0;
+      overflow: hidden;
+      transition: max-height 0.6s ease-out, opacity 0.6s ease-out, padding 0.6s ease-out;
+    }
+    .conditional-section.visible {
+      max-height: 500px;
+      opacity: 1;
+      padding-top: 2rem;
+      padding-bottom: 2rem;
+    }
   </style>
 </head>
-<body>
-  <div class="container">
-    <h1>Jamaica Online Seller Tracker Prototype</h1>
 
-    <div class="section">
-      <h2>New Order</h2>
-      <form id="orderForm">
-        <label>Customer Name</label>
-        <input type="text" id="customerName">
+<body class="bg-gradient-to-br from-gray-900 via-gray-950 to-black text-gray-100 min-h-screen font-sans antialiased">
+  <div class="max-w-4xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+    <header class="text-center mb-12">
+      <h1 class="text-4xl sm:text-5xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-premium-green via-accent-gold to-premium-green inline-block">
+        Smart Seller Tracker
+      </h1>
+      <p class="mt-3 text-gray-400 text-lg">Learns from you • Suggests smartly • Fully offline</p>
+    </header>
 
-        <label>Phone/WhatsApp</label>
-        <input type="tel" id="customerPhone">
+    <div class="bg-card-bg backdrop-blur-xl border border-gray-800/50 rounded-3xl shadow-premium overflow-hidden mb-12">
+      <div class="p-6 sm:p-10">
+        <h2 class="text-2xl sm:text-3xl font-bold text-white mb-8 tracking-tight">New Sale</h2>
 
-        <label>Platform</label>
-        <select id="platform">
-          <option>Instagram</option><option>WhatsApp</option><option>Facebook</option>
-          <option>TikTok</option><option>7Krave</option><option>Other</option>
-        </select>
+        <form id="orderForm" class="space-y-8">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div>
+              <label class="block text-sm font-semibold text-gray-300 mb-2">Customer Name</label>
+              <input 
+                type="text" 
+                id="customerName" 
+                class="w-full px-5 py-4 bg-gray-900/60 border border-gray-700 rounded-xl focus:ring-2 focus:ring-accent-gold focus:border-accent-gold outline-none transition-all duration-300 text-white placeholder-gray-500 capitalize"
+                oninput="this.value = this.value.replace(/\b\w/g, l => l.toUpperCase())"
+              >
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-gray-300 mb-2">Phone / WhatsApp</label>
+              <div class="relative flex items-center bg-gray-900/60 border border-gray-700 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-accent-gold focus-within:border-accent-gold transition-all duration-300">
+                <span class="pl-5 pr-3 py-4 text-gray-400 font-medium select-none whitespace-nowrap">+1-876-</span>
+                <input 
+                  type="tel" 
+                  id="customerPhone" 
+                  class="flex-1 px-3 py-4 bg-transparent border-none focus:ring-0 outline-none text-white font-mono caret-white text-base"
+                  placeholder="XXX-XXXX"
+                  maxlength="8"
+                  oninput="formatJamaicaPhoneDigits(this)"
+                >
+              </div>
+              <div id="phoneHint" class="text-xs text-accent-gold mt-1">Enter your 7-digit number (e.g. 5551234)</div>
+            </div>
+          </div>
 
-        <label>Notes</label>
-        <textarea id="notes" rows="2"></textarea>
+          <div>
+            <label class="block text-sm font-semibold text-gray-300 mb-2">Platform</label>
+            <select id="platform" class="w-full px-5 py-4 bg-gray-900/60 border border-gray-700 rounded-xl focus:ring-2 focus:ring-accent-gold focus:border-accent-gold outline-none transition-all duration-300 text-white">
+              <option>Instagram</option><option>WhatsApp</option><option>Facebook</option>
+              <option>TikTok</option><option>7Krave</option><option>Other</option>
+            </select>
+          </div>
 
-        <label>Payment Status</label>
-        <select id="paymentStatus">
-          <option>Pending</option><option>Partial</option><option>Paid - Cash</option>
-          <option>Paid - Transfer</option><option>Paid - Card</option>
-        </select>
+          <div id="notesSection" class="conditional-section space-y-2">
+            <label class="block text-sm font-semibold text-gray-300 mb-2">Notes <span class="text-xs text-gray-500">(smart suggestions appear below)</span></label>
+            <textarea id="notes" rows="3" class="w-full px-5 py-4 bg-gray-900/60 border border-gray-700 rounded-xl focus:ring-2 focus:ring-accent-gold focus:border-accent-gold outline-none transition-all duration-300 text-white placeholder-gray-500"></textarea>
+            <div id="smartNoteHint" class="text-xs text-accent-gold mt-1 min-h-[1.2rem]"></div>
+          </div>
 
-        <h3>Items (add at least 1)</h3>
-        <div id="items-container"></div>
-        <button type="button" onclick="addItemRow()">+ Add Item</button>
+          <div id="paymentSection" class="conditional-section">
+            <label class="block text-sm font-semibold text-gray-300 mb-2">Payment Status</label>
+            <select id="paymentStatus" class="w-full px-5 py-4 bg-gray-900/60 border border-gray-700 rounded-xl focus:ring-2 focus:ring-accent-gold focus:border-accent-gold outline-none transition-all duration-300 text-white">
+              <option>Pending</option><option>Partial</option><option>Paid - Cash</option>
+              <option>Paid - Transfer</option><option>Paid - Card</option>
+            </select>
+          </div>
 
-        <label>Delivery Fee (JMD)</label>
-        <input type="number" id="deliveryFee" value="0" min="0" step="1">
+          <div class="space-y-6">
+            <div class="flex items-center justify-between">
+              <label class="block text-lg font-semibold text-white tracking-wide">Items</label>
+              <span class="text-sm text-gray-400">Smart suggestions & learned items</span>
+            </div>
 
-        <div id="summary">Subtotal: J$0.00 | Total: J$0.00</div>
+            <div id="items-container" class="space-y-6"></div>
 
-        <button type="submit">Save Order</button>
-        <div id="saveFeedback" class="feedback"></div>
-      </form>
+            <button 
+              type="button" 
+              id="addItemBtn"
+              class="group w-full flex items-center justify-center gap-3 px-6 py-5 bg-gradient-to-r from-premium-green/80 to-premium-dark/80 hover:from-premium-green hover:to-premium-dark border border-accent-gold/30 rounded-2xl text-white font-medium text-lg transition-all duration-300 hover:shadow-glow hover:scale-[1.015] active:scale-95"
+            >
+              <svg class="w-6 h-6 group-hover:rotate-90 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+              Add New Item
+            </button>
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold text-gray-300 mb-2">Delivery Fee (JMD)</label>
+            <input type="number" id="deliveryFee" value="0" min="0" step="1" class="w-full px-5 py-4 bg-gray-900/60 border border-gray-700 rounded-xl focus:ring-2 focus:ring-accent-gold focus:border-accent-gold outline-none transition-all duration-300 text-white">
+          </div>
+
+          <div id="summary" class="bg-gray-900/40 p-6 rounded-2xl text-xl font-semibold text-accent-gold border border-gray-800/50">
+            Subtotal: J$0.00  |  Total: J$0.00
+          </div>
+
+          <div id="smartHint" class="text-sm text-accent-gold bg-gray-900/30 p-4 rounded-xl border border-gray-700/50 min-h-[2.5rem]"></div>
+
+          <button type="submit" class="w-full bg-gradient-to-r from-premium-green via-premium-dark to-premium-green text-white py-5 rounded-2xl font-bold text-xl hover:shadow-glow hover:scale-[1.02] transition-all duration-300 shadow-premium">
+            Save Smart Order
+          </button>
+
+          <div id="saveFeedback" class="text-center font-medium min-h-[1.5rem] mt-3"></div>
+        </form>
+      </div>
     </div>
 
-    <div class="section">
-      <h2>Saved Orders</h2>
-      <p id="totalRevenue">Total Revenue: J$0.00 | Orders: 0</p>
-      <button onclick="exportCSV()">Export All to CSV</button>
-      <div id="exportFeedback" class="feedback"></div>
-      <div id="orders-list"></div>
+    <!-- Saved Orders -->
+    <div class="bg-card-bg backdrop-blur-xl border border-gray-800/50 rounded-3xl shadow-premium overflow-hidden p-6 sm:p-10">
+      <h2 class="text-2xl sm:text-3xl font-bold text-white mb-8 tracking-tight">Your Orders</h2>
+
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 mb-8">
+        <p id="totalRevenue" class="text-xl font-semibold text-gray-300">
+          Total Revenue: J$0.00  |  Orders: 0
+        </p>
+        <button onclick="exportCSV()" class="bg-gradient-to-r from-blue-700 to-blue-900 text-white px-8 py-4 rounded-2xl hover:shadow-glow hover:scale-[1.02] transition-all duration-300 font-bold text-lg">
+          Export CSV
+        </button>
+      </div>
+
+      <div id="exportFeedback" class="text-center font-medium min-h-[1.5rem] mb-6"></div>
+
+      <div id="smartDashboard" class="text-sm text-gray-300 bg-gray-900/40 p-5 rounded-2xl border border-gray-800/50 mb-6"></div>
+
+      <div id="orders-list" class="space-y-6"></div>
     </div>
   </div>
 
   <script>
     const { jsPDF } = window.jspdf || {};
     let orders = JSON.parse(localStorage.getItem('jmSalesOrders')) || [];
+    let itemHistory = JSON.parse(localStorage.getItem('smartItemHistory')) || {};
+    let commonItems = Object.keys(itemHistory).sort((a,b) => (itemHistory[b]?.count || 0) - (itemHistory[a]?.count || 0));
+
+    function saveSmartData() {
+      localStorage.setItem('smartItemHistory', JSON.stringify(itemHistory));
+    }
 
     function saveOrders() {
       localStorage.setItem('jmSalesOrders', JSON.stringify(orders));
       updateDashboard();
       renderOrders();
+      updateSmartDashboard();
     }
 
     function updateDashboard() {
       const total = orders.reduce((sum, o) => sum + o.total, 0);
       document.getElementById('totalRevenue').textContent = 
-        `Total Revenue: J$${total.toLocaleString('en-JM', {minimumFractionDigits: 2})} | Orders: ${orders.length}`;
+        `Total Revenue: J$${total.toLocaleString('en-JM', {minimumFractionDigits: 2})}  |  Orders: ${orders.length}`;
+    }
+
+    function updateSmartDashboard() {
+      if (orders.length < 3) return;
+      const recent = orders.slice(-10);
+      const itemCounts = {};
+      recent.forEach(o => {
+        o.items.forEach(it => {
+          itemCounts[it.name] = (itemCounts[it.name] || 0) + it.qty;
+        });
+      });
+      const topItem = Object.entries(itemCounts).sort((a,b) => b[1] - a[1])[0];
+      if (topItem) {
+        document.getElementById('smartDashboard').innerHTML = 
+          `📊 Recent insight: <strong>${topItem[0]}</strong> sold ${topItem[1]} times in last 10 orders`;
+      }
     }
 
     function renderOrders() {
@@ -96,12 +212,19 @@
       list.innerHTML = '';
       orders.forEach((o, i) => {
         const div = document.createElement('div');
-        div.className = 'order-item';
+        div.className = 'bg-gray-900/40 p-6 rounded-2xl border border-gray-800/50 hover:border-accent-gold/50 transition-all duration-300';
         div.innerHTML = `
-          <strong>Order #${i+1} - ${o.date}</strong><br>
-          ${o.customerName} (${o.customerPhone}) - ${o.platform}<br>
-          Status: ${o.paymentStatus} | Total: J$${o.total.toLocaleString('en-JM', {minimumFractionDigits: 2})}<br>
-          <button onclick="generatePDF(${i})">Download PDF</button>
+          <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+            <div>
+              <div class="text-lg font-bold text-white">Order #${i+1} – ${o.date}</div>
+              <div class="text-gray-300 mt-1">${o.customerName}</div>
+              <div class="text-sm text-gray-500 mt-1">${o.platform} • ${o.paymentStatus}</div>
+              <div class="text-accent-gold font-semibold mt-2">J$${o.total.toLocaleString('en-JM', {minimumFractionDigits: 2})}</div>
+            </div>
+            <button onclick="generatePDF(${i})" class="bg-gradient-to-r from-premium-green to-premium-dark text-white px-6 py-3 rounded-xl hover:shadow-glow hover:scale-105 transition-all duration-300 font-medium self-start sm:self-center">
+              Receipt PDF
+            </button>
+          </div>
         `;
         list.appendChild(div);
       });
@@ -110,144 +233,110 @@
     function addItemRow() {
       const container = document.getElementById('items-container');
       const row = document.createElement('div');
-      row.className = 'item-row';
+      row.className = 'relative bg-gray-900/50 backdrop-blur-sm border border-gray-700/70 rounded-2xl p-6 shadow-inner transition-all duration-300 hover:border-accent-gold/40 group';
+
+      const uniqueId = 'datalist-' + Date.now();
+
       row.innerHTML = `
-        <input type="text" placeholder="Item name" class="item-name">
-        <input type="number" placeholder="Qty" value="1" min="1" class="item-qty">
-        <input type="number" placeholder="Price JMD" value="0" min="0" step="1" class="item-price">
-        <button type="button" class="remove" onclick="this.parentElement.remove(); updateSummary()">X</button>
+        <div class="absolute -top-3 right-4">
+          <button type="button" onclick="this.closest('.relative').remove(); updateSummary(); checkIfItemsExist()" 
+            class="bg-red-900/70 text-white px-4 py-1.5 rounded-full text-sm font-medium hover:bg-red-800 transition-all duration-300 opacity-70 hover:opacity-100 shadow-md">
+            Remove
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-12 gap-5 items-end">
+          <div class="sm:col-span-6">
+            <label class="block text-sm font-medium text-gray-400 mb-2 group-hover:text-accent-gold/80 transition-colors">Item / Description</label>
+            <input 
+              type="text" 
+              placeholder="Start typing..." 
+              class="item-name w-full px-5 py-4 bg-gray-950/60 border border-gray-600 rounded-xl focus:ring-2 focus:ring-accent-gold focus:border-accent-gold outline-none transition-all duration-300 text-white placeholder-gray-500 text-base"
+              list="${uniqueId}"
+              oninput="updateSmartPriceHint(this)"
+            >
+            <datalist id="${uniqueId}">
+              ${commonItems.map(item => `<option value="${item}">`).join('')}
+            </datalist>
+          </div>
+
+          <div class="sm:col-span-2">
+            <label class="block text-sm font-medium text-gray-400 mb-2 group-hover:text-accent-gold/80 transition-colors">Qty</label>
+            <input type="number" placeholder="1" value="1" min="1" class="item-qty w-full px-5 py-4 bg-gray-950/60 border border-gray-600 rounded-xl focus:ring-2 focus:ring-accent-gold focus:border-accent-gold outline-none transition-all duration-300 text-white text-center text-base">
+          </div>
+
+          <div class="sm:col-span-4">
+            <label class="block text-sm font-medium text-gray-400 mb-2 group-hover:text-accent-gold/80 transition-colors">Price (JMD)</label>
+            <div class="relative">
+              <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium">J$</span>
+              <input type="number" placeholder="0" value="0" min="0" step="1" class="item-price w-full pl-12 pr-5 py-4 bg-gray-950/60 border border-gray-600 rounded-xl focus:ring-2 focus:ring-accent-gold focus:border-accent-gold outline-none transition-all duration-300 text-white text-base">
+            </div>
+          </div>
+        </div>
       `;
+
       container.appendChild(row);
       updateSummary();
+      checkIfItemsExist();
+
+      row.style.opacity = '0';
+      row.style.transform = 'translateY(20px)';
+      setTimeout(() => {
+        row.style.transition = 'all 0.4s ease-out';
+        row.style.opacity = '1';
+        row.style.transform = 'translateY(0)';
+      }, 10);
     }
 
-    function updateSummary() {
-      let subtotal = 0;
-      document.querySelectorAll('.item-row').forEach(r => {
-        subtotal += (Number(r.querySelector('.item-qty').value) || 0) * (Number(r.querySelector('.item-price').value) || 0);
-      });
-      const delivery = Number(document.getElementById('deliveryFee').value) || 0;
-      const total = subtotal + delivery;
-      document.getElementById('summary').textContent = 
-        `Subtotal: J$${subtotal.toLocaleString('en-JM', {minimumFractionDigits: 2})} | Total: J$${total.toLocaleString('en-JM', {minimumFractionDigits: 2})}`;
+    function checkIfItemsExist() {
+      const itemCount = document.querySelectorAll('#items-container > div').length;
+      const notesSec = document.getElementById('notesSection');
+      const paymentSec = document.getElementById('paymentSection');
+
+      if (itemCount > 0) {
+        notesSec.classList.add('visible');
+        paymentSec.classList.add('visible');
+      } else {
+        notesSec.classList.remove('visible');
+        paymentSec.classList.remove('visible');
+      }
     }
 
-    document.getElementById('orderForm').addEventListener('submit', e => {
-      e.preventDefault();
-      const feedback = document.getElementById('saveFeedback');
-      feedback.className = 'feedback';
-      feedback.textContent = 'Processing...';
+    function formatJamaicaPhoneDigits(input) {
+      let digits = input.value.replace(/\D/g, '');
+      digits = digits.slice(0, 7);
 
-      const name = document.getElementById('customerName').value.trim();
-      const phone = document.getElementById('customerPhone').value.trim();
-      const items = [];
-
-      document.querySelectorAll('.item-row').forEach(r => {
-        const n = r.querySelector('.item-name').value.trim();
-        const q = Number(r.querySelector('.item-qty').value) || 0;
-        const p = Number(r.querySelector('.item-price').value) || 0;
-        if (n && q > 0) items.push({name: n, qty: q, price: p});
-      });
-
-      if (!name) {
-        feedback.className = 'feedback error';
-        feedback.textContent = 'Customer name is required!';
-        return;
-      }
-      if (!phone) {
-        feedback.className = 'feedback error';
-        feedback.textContent = 'Phone/WhatsApp is required!';
-        return;
-      }
-      if (items.length === 0) {
-        feedback.className = 'feedback error';
-        feedback.textContent = 'Add at least one item with name and qty!';
-        return;
+      let formatted = digits;
+      if (digits.length > 3) {
+        formatted = digits.slice(0, 3) + '-' + digits.slice(3);
       }
 
-      const order = {
-        date: new Date().toLocaleString('en-JM'),
-        customerName: name,
-        customerPhone: phone,
-        platform: document.getElementById('platform').value,
-        notes: document.getElementById('notes').value.trim(),
-        paymentStatus: document.getElementById('paymentStatus').value,
-        deliveryFee: Number(document.getElementById('deliveryFee').value) || 0,
-        items,
-        subtotal: items.reduce((s, it) => s + it.qty * it.price, 0),
-        total: items.reduce((s, it) => s + it.qty * it.price, 0) + (Number(document.getElementById('deliveryFee').value) || 0)
-      };
-
-      orders.push(order);
-      saveOrders();
-
-      e.target.reset();
-      document.getElementById('items-container').innerHTML = '';
-      addItemRow();
-
-      feedback.className = 'feedback success';
-      feedback.textContent = `Saved! Order #${orders.length} added. Scroll down to see list or export.`;
-    });
-
-    function generatePDF(index) {
-      if (!jsPDF) {
-        alert("PDF library failed to load - check internet");
-        return;
-      }
-      const order = orders[index];
-      const doc = new jsPDF();
-      let y = 20;
-      doc.setFontSize(18); doc.text("Receipt", 105, y, {align: "center"}); y += 15;
-      doc.setFontSize(12);
-      doc.text(`Order #${index+1} - ${order.date}`, 20, y); y += 10;
-      doc.text(`${order.customerName} (${order.customerPhone})`, 20, y); y += 8;
-      doc.text(`Platform: ${order.platform} | ${order.paymentStatus}`, 20, y); y += 12;
-      doc.text("Items:", 20, y); y += 8;
-      order.items.forEach(it => {
-        doc.text(`${it.qty} x ${it.name} @ J$${it.price} = J$${(it.qty*it.price).toFixed(2)}`, 25, y); y += 8;
-      });
-      y += 5;
-      doc.text(`Subtotal: J$${order.subtotal.toFixed(2)}`, 20, y); y += 8;
-      doc.text(`Delivery: J$${order.deliveryFee.toFixed(2)}`, 20, y); y += 8;
-      doc.setFontSize(14); doc.text(`TOTAL: J$${order.total.toFixed(2)}`, 20, y);
-      doc.save(`receipt_${index+1}.pdf`);
+      input.value = formatted;
     }
 
-    function exportCSV() {
-      const feedback = document.getElementById('exportFeedback');
-      feedback.className = 'feedback';
-      feedback.textContent = '';
+    function updateSmartPriceHint(inputEl) {
+      const name = inputEl.value.trim().toLowerCase();
+      if (!name || name.length < 3) return;
 
-      if (orders.length === 0) {
-        feedback.className = 'feedback error';
-        feedback.textContent = 'No orders to export yet - save some first!';
-        return;
+      const match = itemHistory[name];
+      const hintEl = document.getElementById('smartHint');
+
+      if (match && match.avgPrice) {
+        hintEl.textContent = `Smart price hint: J$${match.avgPrice.toLocaleString()} (from your past sales)`;
+        hintEl.className = 'text-sm text-accent-gold bg-gray-900/30 p-3 rounded-xl border border-gray-700/50';
+      } else {
+        hintEl.textContent = '';
       }
-
-      let csv = 'Order#,Date,Name,Phone,Platform,Status,Items,Subtotal,Delivery,Total,Notes\n';
-      orders.forEach((o, i) => {
-        const itemsStr = o.items.map(it => `${it.qty}x ${it.name} @${it.price}`).join('; ');
-        csv += `${i+1},${o.date},"${o.customerName.replace(/"/g,'""')}","${o.customerPhone}",${o.platform},${o.paymentStatus},"${itemsStr}",${o.subtotal},${o.deliveryFee},${o.total},"${(o.notes || '').replace(/"/g,'""')}"\n`;
-      });
-
-      const blob = new Blob([csv], {type: 'text/csv'});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'sales_export.csv';
-      a.click();
-      URL.revokeObjectURL(url);
-
-      feedback.className = 'feedback success';
-      feedback.textContent = 'CSV downloaded! Check your downloads folder.';
     }
 
-    // Init
-    addItemRow();
-    updateDashboard();
-    renderOrders();
-    document.getElementById('items-container').addEventListener('input', updateSummary);
-    document.getElementById('deliveryFee').addEventListener('input', updateSummary);
-  </script>
-</body>
-</html>
+    function updateSmartNoteHint() {
+      const notes = document.getElementById('notes').value.toLowerCase();
+      const hintEl = document.getElementById('smartNoteHint');
+      let hint = '';
+
+      if (notes.includes('portmore') || notes.includes('port more')) {
+        hint = 'Smart tip: Portmore delivery usually J$300–500';
+      } else if (notes.includes('kingston') || notes.includes('cbd')) {
+        hint = 'Smart tip: Kingston CBD pickup often free';
+      } else if (notes.includes('rush') || notes.includes('urgent')) {
+        hint = 'Smart tip: Consider
