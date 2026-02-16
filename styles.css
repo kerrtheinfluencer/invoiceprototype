@@ -59,6 +59,23 @@
 
     .menu-btn:hover { background: #1c86ee; }
 
+    .admin-link {
+      display: inline-block;
+      margin-top: -4px;
+      color: #93c5fd;
+      text-decoration: none;
+      font-weight: 700;
+      border: 1px solid #334155;
+      background: #0f172a;
+      padding: 8px 12px;
+      border-radius: 9px;
+    }
+
+    .admin-link:hover {
+      color: #bfdbfe;
+      border-color: #475569;
+    }
+
     .card {
       background: var(--card);
       border: 1px solid var(--border);

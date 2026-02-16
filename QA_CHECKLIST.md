@@ -36,3 +36,10 @@ Use this quick checklist after UI or logic changes.
 - [ ] Verify `beta-signups.json` is created/updated with the new signup record.
 - [ ] Verify protected signup report works with Basic Auth (`kxrr1` / `Iamsuperman2021`) using:
       `curl -u kxrr1:Iamsuperman2021 http://localhost:3000/api/signups`
+
+## Admin Login + Multi-Device Monitoring
+- [ ] Open `http://localhost:3000/admin.html`.
+- [ ] Login with `kxrr1` / `Iamsuperman2021`.
+- [ ] Confirm signup table loads and total count updates.
+- [ ] Confirm auto-refresh updates data every ~15 seconds.
+- [ ] Open the admin page on a second device/browser and verify both views show the same server data.
