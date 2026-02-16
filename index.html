@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Jamaica Online Seller Tracker</title>
+  <title>Jamaica Seller Tracker – Premium</title>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
@@ -14,10 +14,11 @@
       --gold: #d4af37;
       --bg: #0a0a0a;
       --card: #111111;
-      --border: #333333;
-      --text: #e0e0e0;
-      --text-light: #aaaaaa;
+      --border: #2a2a2a;
+      --text: #f0f0f0;
+      --text-light: #bbbbbb;
       --red: #c0392b;
+      --shadow: 0 8px 24px rgba(0,0,0,0.6);
     }
 
     * { margin:0; padding:0; box-sizing:border-box; }
@@ -26,36 +27,70 @@
       background: var(--bg);
       color: var(--text);
       min-height: 100vh;
-      padding: 20px 16px;
+      padding: 32px 16px;
       line-height: 1.6;
     }
 
-    .container { max-width: 960px; margin: 0 auto; }
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
 
     h1 {
-      font-size: 2.5rem;
-      text-align: center;
-      margin-bottom: 12px;
+      font-size: 2.8rem;
+      font-weight: 800;
       background: linear-gradient(90deg, var(--green-dark), var(--gold), var(--green-med));
       -webkit-background-clip: text;
       background-clip: text;
       color: transparent;
-      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .intro {
+      color: var(--text-light);
+      font-size: 1.1rem;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+      margin: 32px 0;
+      box-shadow: var(--shadow);
     }
 
     h2 {
-      font-size: 1.8rem;
-      margin: 32px 0 16px;
+      font-size: 1.9rem;
+      margin-bottom: 24px;
       color: white;
-      border-bottom: 2px solid var(--green-med);
-      padding-bottom: 8px;
+      position: relative;
+      display: inline-block;
+    }
+
+    h2:after {
+      content: '';
+      position: absolute;
+      bottom: -8px;
+      left: 0;
+      width: 60px;
+      height: 3px;
+      background: var(--gold);
+      border-radius: 2px;
     }
 
     label {
       display: block;
-      font-size: 1rem;
+      font-size: 1.05rem;
       font-weight: 600;
-      margin: 16px 0 8px;
+      margin: 20px 0 8px;
       color: #ddd;
     }
 
@@ -67,31 +102,50 @@
       border-radius: 10px;
       color: white;
       font-size: 1rem;
-      margin-bottom: 12px;
+      transition: all 0.2s;
     }
 
     input:focus, select:focus, textarea:focus {
       outline: none;
       border-color: var(--gold);
-      box-shadow: 0 0 0 3px rgba(212,175,55,0.2);
+      box-shadow: 0 0 0 3px rgba(212,175,55,0.15);
     }
 
-    button {
+    .phone-wrapper {
+      position: relative;
+    }
+
+    .phone-prefix {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #888;
+      pointer-events: none;
+      font-weight: bold;
+    }
+
+    #customerPhone {
+      padding-left: 90px !important;
+    }
+
+    .btn {
       background: var(--green-dark);
       color: white;
       border: none;
-      padding: 14px 24px;
+      padding: 14px 28px;
       border-radius: 10px;
       font-size: 1.05rem;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.2s;
-      margin: 8px 0;
+      margin: 12px 0;
     }
 
-    button:hover {
+    .btn:hover {
       background: var(--green-med);
       transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(0,100,0,0.4);
     }
 
     .add-item-btn {
@@ -100,42 +154,43 @@
       align-items: center;
       justify-content: center;
       gap: 12px;
-      font-size: 1.1rem;
-      padding: 16px;
-      margin: 16px 0;
+      font-size: 1.15rem;
+      padding: 18px;
+      margin: 24px 0 40px;
       width: 100%;
     }
 
     .items-section {
-      margin: 20px 0;
+      margin: 24px 0;
     }
 
     .item-row {
       background: #1a1a1a;
       border: 1px solid #444;
       border-radius: 12px;
-      padding: 16px;
-      margin: 12px 0;
+      padding: 24px;
+      margin: 20px 0;
       position: relative;
-      transition: border-color 0.2s;
+      transition: all 0.2s;
     }
 
     .item-row:hover {
       border-color: var(--gold);
+      box-shadow: 0 4px 16px rgba(212,175,55,0.1);
     }
 
     .remove-btn {
       position: absolute;
-      top: 12px;
-      right: 12px;
+      top: 16px;
+      right: 16px;
       background: var(--red);
       color: white;
       border: none;
       border-radius: 50%;
-      width: 28px;
-      height: 28px;
+      width: 32px;
+      height: 32px;
       font-size: 1.1rem;
-      line-height: 28px;
+      line-height: 32px;
       text-align: center;
       cursor: pointer;
       transition: background 0.2s;
@@ -147,9 +202,9 @@
 
     .item-grid {
       display: grid;
-      grid-template-columns: 2fr 1fr 1fr;
-      gap: 12px;
-      align-items: center;
+      grid-template-columns: 3fr 1fr 1fr;
+      gap: 20px;
+      align-items: end;
     }
 
     @media (max-width: 600px) {
@@ -159,11 +214,11 @@
     }
 
     #summary {
-      font-size: 1.3rem;
+      font-size: 1.4rem;
       font-weight: bold;
       text-align: center;
-      margin: 24px 0;
-      padding: 16px;
+      margin: 32px 0;
+      padding: 20px;
       background: #1a1a1a;
       border: 1px solid #444;
       border-radius: 12px;
@@ -173,16 +228,18 @@
       background: #1a1a1a;
       border: 1px solid #333;
       border-radius: 12px;
-      padding: 20px;
-      margin-bottom: 20px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
     }
 
     .feedback {
-      padding: 12px;
-      margin: 12px 0;
-      border-radius: 8px;
+      padding: 16px;
+      margin: 16px 0;
+      border-radius: 10px;
       text-align: center;
       font-weight: bold;
+      font-size: 1.1rem;
     }
 
     .success { background: #004d00; color: #90ee90; }
@@ -192,20 +249,20 @@
 <body>
 
 <div class="container">
-  <h1>Jamaica Online Seller Tracker</h1>
-  <p style="text-align:center; color:#aaa; margin-bottom:32px;">Add sales → Save → View → PDF or CSV</p>
+  <h1>Jamaica Seller Tracker</h1>
+  <p class="intro">Quick sales entry • PDF receipts • CSV export • All in your browser</p>
 
   <div class="card">
-    <h2>New Order</h2>
+    <h2>New Sale</h2>
 
     <form id="orderForm">
       <label>Customer Name *</label>
       <input type="text" id="customerName" required oninput="this.value = this.value.replace(/\b\w/g, l => l.toUpperCase())">
 
       <label>Phone / WhatsApp *</label>
-      <div style="position:relative;">
-        <span style="position:absolute; left:16px; top:50%; transform:translateY(-50%); color:#888; pointer-events:none; font-weight:bold;">+1-876-</span>
-        <input type="tel" id="customerPhone" required placeholder="Enter 7 digits (e.g. 5551234)" maxlength="8" style="padding-left:90px;">
+      <div class="phone-wrapper">
+        <span class="phone-prefix">+1-876-</span>
+        <input type="tel" id="customerPhone" required placeholder="Enter 7 digits (e.g. 5551234)" maxlength="8">
       </div>
 
       <label>Platform</label>
@@ -216,18 +273,6 @@
         <option>TikTok</option>
         <option>7Krave</option>
         <option>Other</option>
-      </select>
-
-      <label>Notes</label>
-      <textarea id="notes" rows="2" placeholder="Delivery info, custom requests..."></textarea>
-
-      <label>Payment Status</label>
-      <select id="paymentStatus">
-        <option>Pending</option>
-        <option>Partial</option>
-        <option>Paid - Cash</option>
-        <option>Paid - Transfer</option>
-        <option>Paid - Card</option>
       </select>
 
       <h3>Items</h3>
@@ -243,9 +288,20 @@
       <label>Delivery Fee (JMD)</label>
       <input type="number" id="deliveryFee" value="0" min="0" step="0.01">
 
-      <div id="summary" style="font-size:1.3rem; font-weight:bold; margin:20px 0; text-align:center;">
-        Subtotal: J$0.00   |   Total: J$0.00
-      </div>
+      <div id="summary">Subtotal: J$0.00 | Total: J$0.00</div>
+
+      <!-- Notes & Payment Status below Items -->
+      <label>Notes / Delivery Info</label>
+      <textarea id="notes" rows="3" placeholder="e.g. Deliver to Portmore - J$500 fee"></textarea>
+
+      <label>Payment Status</label>
+      <select id="paymentStatus">
+        <option>Pending</option>
+        <option>Partial</option>
+        <option>Paid - Cash</option>
+        <option>Paid - Transfer</option>
+        <option>Paid - Card</option>
+      </select>
 
       <button type="submit">Save Order & Generate Receipt</button>
 
@@ -255,9 +311,9 @@
 
   <div class="card">
     <h2>Saved Orders</h2>
-    <p id="totalRevenue" style="font-size:1.2rem; margin-bottom:16px;">Total Revenue: J$0.00 | Orders: 0</p>
-    <button onclick="exportCSV()" style="background:#1e90ff;">Export All to CSV</button>
-    <div id="orders-list" style="margin-top:24px;"></div>
+    <p id="totalRevenue" style="font-size:1.2rem; margin-bottom:20px;">Total Revenue: J$0.00 | Orders: 0</p>
+    <button onclick="exportCSV()" style="background:#1e90ff; width:auto; padding:14px 28px;">Export All to CSV</button>
+    <div id="orders-list" style="margin-top:32px;"></div>
   </div>
 </div>
 
@@ -286,9 +342,10 @@
       div.innerHTML = `
         <strong>Order #${index+1} - ${order.date}</strong><br>
         Customer: ${order.customerName}<br>
+        Phone: ${order.customerPhone}<br>
         Platform: ${order.platform} | Status: ${order.paymentStatus}<br>
         Total: J$${order.total.toFixed(2)}<br>
-        <button onclick="generatePDF(${index})" style="background:var(--green-med); margin-top:12px;">Download PDF</button>
+        <button onclick="generatePDF(${index})" style="background:var(--green-med); margin-top:16px;">Download PDF Receipt</button>
       `;
       list.appendChild(div);
     });
@@ -301,7 +358,7 @@
     row.innerHTML = `
       <button type="button" class="remove-btn" onclick="this.parentElement.remove(); updateSummary()">X</button>
 
-      <label>Item name/desc</label>
+      <label>Item name / description</label>
       <input type="text" placeholder="e.g. 20 inch wig" class="item-name">
 
       <div class="item-grid">
