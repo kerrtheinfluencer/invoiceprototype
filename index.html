@@ -31,10 +31,7 @@
       line-height: 1.6;
     }
 
-    .container {
-      max-width: 1000px;
-      margin: 0 auto;
-    }
+    .container { max-width: 1000px; margin: 0 auto; }
 
     header {
       text-align: center;
@@ -57,6 +54,20 @@
       max-width: 600px;
       margin: 0 auto;
     }
+
+    .menu-btn {
+      background: #1e90ff;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-size: 1rem;
+      cursor: pointer;
+      margin: 16px auto;
+      display: block;
+    }
+
+    .menu-btn:hover { background: #1c86ee; }
 
     .card {
       background: var(--card);
@@ -111,24 +122,6 @@
       box-shadow: 0 0 0 3px rgba(212,175,55,0.15);
     }
 
-    .phone-wrapper {
-      position: relative;
-    }
-
-    .phone-prefix {
-      position: absolute;
-      left: 16px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: #888;
-      pointer-events: none;
-      font-weight: bold;
-    }
-
-    #customerPhone {
-      padding-left: 90px !important;
-    }
-
     .btn {
       background: var(--green-dark);
       color: white;
@@ -140,6 +133,7 @@
       cursor: pointer;
       transition: all 0.2s;
       margin: 12px 0;
+      width: 100%;
     }
 
     .btn:hover {
@@ -160,9 +154,7 @@
       width: 100%;
     }
 
-    .items-section {
-      margin: 24px 0;
-    }
+    .items-section { margin: 24px 0; }
 
     .item-row {
       background: #1a1a1a;
@@ -196,9 +188,7 @@
       transition: background 0.2s;
     }
 
-    .remove-btn:hover {
-      background: #a00;
-    }
+    .remove-btn:hover { background: #a00; }
 
     .item-grid {
       display: grid;
@@ -208,9 +198,7 @@
     }
 
     @media (max-width: 600px) {
-      .item-grid {
-        grid-template-columns: 1fr;
-      }
+      .item-grid { grid-template-columns: 1fr; }
     }
 
     #summary {
@@ -244,13 +232,43 @@
 
     .success { background: #004d00; color: #90ee90; }
     .error   { background: #600; color: #ff9999; }
+
+    #businessSettings {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.8);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #businessForm {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 32px;
+      width: 90%;
+      max-width: 500px;
+      box-shadow: var(--shadow);
+    }
+
+    #closeSettings {
+      background: var(--red);
+      width: auto;
+      padding: 12px 24px;
+    }
   </style>
 </head>
 <body>
 
 <div class="container">
-  <h1>Jamaica Seller Tracker</h1>
-  <p class="intro">Quick sales entry • PDF receipts • CSV export • All in your browser</p>
+  <header>
+    <h1>Jamaica Seller Tracker</h1>
+    <p class="intro">Quick sales • PDF receipts with your branding • CSV export</p>
+    <button class="menu-btn" onclick="document.getElementById('businessSettings').style.display='flex'">
+      ⚙️ Business Settings
+    </button>
+  </header>
 
   <div class="card">
     <h2>New Sale</h2>
@@ -290,7 +308,6 @@
 
       <div id="summary">Subtotal: J$0.00 | Total: J$0.00</div>
 
-      <!-- Notes & Payment Status below Items -->
       <label>Notes / Delivery Info</label>
       <textarea id="notes" rows="3" placeholder="e.g. Deliver to Portmore - J$500 fee"></textarea>
 
@@ -317,9 +334,56 @@
   </div>
 </div>
 
+<!-- Business Settings Modal -->
+<div id="businessSettings">
+  <div id="businessForm">
+    <h2>Business Information</h2>
+    <p style="color:#aaa; margin-bottom:24px;">This appears on every receipt PDF</p>
+
+    <label>Business Name</label>
+    <input type="text" id="bizName" placeholder="e.g. Kxrr1 Wigs & Accessories">
+
+    <label>Business Email</label>
+    <input type="email" id="bizEmail" placeholder="e.g. kxrr1business@gmail.com">
+
+    <label>WhatsApp / Contact</label>
+    <input type="tel" id="bizPhone" placeholder="e.g. +1-876-555-1234">
+
+    <label>Extra Receipt Note (optional)</label>
+    <textarea id="bizNote" rows="2" placeholder="e.g. Thank you! Follow us @wtff_zone"></textarea>
+
+    <button class="btn" onclick="saveBusinessInfo()">Save Business Info</button>
+    <button id="closeSettings" class="btn" onclick="document.getElementById('businessSettings').style.display='none'">Close</button>
+  </div>
+</div>
+
 <script>
   const { jsPDF } = window.jspdf;
   let orders = JSON.parse(localStorage.getItem('jamaicaSalesOrders')) || [];
+  let businessInfo = JSON.parse(localStorage.getItem('businessInfo')) || {
+    name: 'Your Business Name',
+    email: '',
+    phone: '',
+    note: 'Thank you for your order! Follow us @wtff_zone'
+  };
+
+  // Load saved business info into form
+  document.getElementById('bizName').value = businessInfo.name || '';
+  document.getElementById('bizEmail').value = businessInfo.email || '';
+  document.getElementById('bizPhone').value = businessInfo.phone || '';
+  document.getElementById('bizNote').value = businessInfo.note || '';
+
+  function saveBusinessInfo() {
+    businessInfo = {
+      name: document.getElementById('bizName').value.trim() || 'Your Business Name',
+      email: document.getElementById('bizEmail').value.trim() || '',
+      phone: document.getElementById('bizPhone').value.trim() || '',
+      note: document.getElementById('bizNote').value.trim() || 'Thank you for your order!'
+    };
+    localStorage.setItem('businessInfo', JSON.stringify(businessInfo));
+    alert('Business information saved! It will now appear on all receipts.');
+    document.getElementById('businessSettings').style.display = 'none';
+  }
 
   function saveOrders() {
     localStorage.setItem('jamaicaSalesOrders', JSON.stringify(orders));
@@ -440,9 +504,22 @@
     const order = orders[index];
     const doc = new jsPDF();
     let y = 20;
+
+    // Business header
     doc.setFontSize(18);
+    doc.setTextColor(0, 100, 0);
+    doc.text(businessInfo.name, 105, y, { align: "center" });
+    y += 10;
+    doc.setFontSize(10);
+    doc.setTextColor(0);
+    if (businessInfo.email) doc.text(`Email: ${businessInfo.email}`, 105, y, { align: "center" });
+    if (businessInfo.phone) doc.text(`WhatsApp: ${businessInfo.phone}`, 105, y += 6, { align: "center" });
+    y += 10;
+
+    doc.setFontSize(16);
     doc.text("Receipt", 105, y, { align: "center" });
     y += 12;
+
     doc.setFontSize(12);
     doc.text(`Order #${index+1} - ${order.date}`, 20, y);
     y += 10;
@@ -451,18 +528,26 @@
     doc.text(`Platform: ${order.platform}`, 20, y += 7);
     if (order.notes) doc.text(`Notes: ${order.notes}`, 20, y += 7);
     y += 12;
+
     doc.text("Items:", 20, y);
     y += 8;
     order.items.forEach(item => {
       doc.text(`${item.qty} × ${item.name} @ J$${item.price.toFixed(2)} = J$${(item.qty * item.price).toFixed(2)}`, 25, y);
       y += 8;
     });
+
     y += 8;
     doc.text(`Subtotal: J$${order.subtotal.toFixed(2)}`, 20, y);
     doc.text(`Delivery: J$${order.deliveryFee.toFixed(2)}`, 20, y += 8);
     doc.setFontSize(14);
+    doc.setTextColor(212, 175, 55);
     doc.text(`TOTAL: J$${order.total.toFixed(2)}`, 20, y += 10);
-    doc.save(`receipt_${index+1}.pdf`);
+
+    doc.setFontSize(10);
+    doc.setTextColor(0);
+    doc.text(businessInfo.note, 105, y += 15, { align: "center" });
+
+    doc.save(`receipt_${index+1}_${order.customerName.replace(/\s/g,'_')}.pdf`);
   }
 
   function exportCSV() {
