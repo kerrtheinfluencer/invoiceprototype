@@ -104,7 +104,7 @@
         Platform: ${order.platform} | Status: ${order.paymentStatus}<br>
         Total: J$${order.total.toFixed(2)}<br>
         <div class="btn-group">
-          <button class="download-btn" onclick="generatePDF(${index})">Download PDF</button>
+          <button onclick="generatePDF(${index})" style="background:var(--green-med);">Download PDF</button>
           <button class="share-btn" onclick="shareReceipt(${index})">Share Receipt</button>
         </div>
       `;
