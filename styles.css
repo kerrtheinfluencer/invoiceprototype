@@ -151,13 +151,62 @@
     }
 
     .share-btn {
-      background: #25D366; /* WhatsApp green */
+      background: linear-gradient(135deg, #7c3aed, #9333ea);
       margin-left: 10px;
       width: auto;
       padding: 12px 20px;
+      color: #ffffff;
+      border: 1px solid #a78bfa;
+      border-radius: 10px;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+      box-shadow: 0 6px 16px rgba(124,58,237,0.28);
     }
 
-    .share-btn:hover { background: #20b858; }
+    .share-btn:hover {
+      background: linear-gradient(135deg, #6d28d9, #7e22ce);
+      transform: translateY(-1px);
+    }
+
+    .save-order-btn {
+      background: linear-gradient(135deg, #15803d, #16a34a);
+      color: #ffffff;
+      border: 1px solid #4ade80;
+      padding: 14px 28px;
+      border-radius: 10px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      cursor: pointer;
+      width: 100%;
+      transition: all 0.2s;
+      letter-spacing: 0.2px;
+      box-shadow: 0 8px 20px rgba(22,163,74,0.25);
+    }
+
+    .save-order-btn:hover {
+      background: linear-gradient(135deg, #166534, #15803d);
+      transform: translateY(-1px);
+      box-shadow: 0 10px 22px rgba(22,163,74,0.35);
+    }
+
+    .download-btn {
+      background: linear-gradient(135deg, #1d4ed8, #2563eb);
+      color: #ffffff;
+      border: 1px solid #60a5fa;
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      letter-spacing: 0.2px;
+      box-shadow: 0 6px 16px rgba(37,99,235,0.28);
+    }
+
+    .download-btn:hover {
+      background: linear-gradient(135deg, #1e40af, #1d4ed8);
+      transform: translateY(-1px);
+    }
 
     .add-item-btn {
       background: linear-gradient(to right, var(--green-med), var(--green-dark));
@@ -232,9 +281,20 @@
 }
 
 .export-btn {
-  background: #1e90ff;
+  background: linear-gradient(135deg, #0f766e, #14b8a6);
   width: auto;
   padding: 14px 28px;
+  color: #ffffff;
+  border: 1px solid #5eead4;
+  border-radius: 10px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  box-shadow: 0 8px 20px rgba(20,184,166,0.24);
+}
+
+.export-btn:hover {
+  background: linear-gradient(135deg, #115e59, #0f766e);
+  transform: translateY(-1px);
 }
 
 .orders-list {
@@ -277,6 +337,71 @@
 
     .success { background: #004d00; color: #90ee90; }
     .error   { background: #600; color: #ff9999; }
+
+
+    .welcome-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.75);
+      z-index: 1100;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .welcome-card {
+      width: 100%;
+      max-width: 520px;
+      background: linear-gradient(165deg, #121212, #1a1a1a);
+      border: 1px solid #3a3a3a;
+      border-radius: 18px;
+      padding: 28px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+    }
+
+    .welcome-copy {
+      color: #cfcfcf;
+      margin: 10px 0 18px;
+    }
+
+    .beta-signup-form {
+      display: grid;
+      gap: 8px;
+    }
+
+    .welcome-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+
+    .welcome-submit-btn,
+    .welcome-dismiss-btn {
+      border: none;
+      border-radius: 10px;
+      padding: 12px 18px;
+      font-weight: 700;
+      cursor: pointer;
+      color: #fff;
+    }
+
+    .welcome-submit-btn {
+      background: linear-gradient(135deg, #0ea5e9, #2563eb);
+      box-shadow: 0 8px 18px rgba(37,99,235,0.3);
+    }
+
+    .welcome-dismiss-btn {
+      background: #2a2a2a;
+      border: 1px solid #4a4a4a;
+    }
+
+    .beta-signup-feedback {
+      min-height: 24px;
+      margin-top: 6px;
+      font-weight: 600;
+    }
 
     #businessSettings {
       display: none;
