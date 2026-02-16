@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Jamaica Seller Tracker - Visible Feedback</title>
+  <!-- Stable jsPDF CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; background: #f8f9fa; color: #333; }
+    h1 { color: #006400; text-align: center; }
+    .section { background: white; padding: 20px; margin: 20px 0; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    label { display: block; margin: 10px 0 5px; font-weight: bold; }
+    input, select, textarea { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+    button { background: #006400; color: white; padding: 12px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 1.1em; }
+    button:hover { background: #004d00; }
+    .item-row { display: flex; gap: 10px; margin-bottom: 10px; }
+    .item-row input { flex: 1; }
+    .remove { background: #c00 !important; flex: 0 0 50px; }
+    #summary { font-weight: bold; color: #006400; margin: 15px 0; font-size: 1.2em; }
+    .feedback { font-weight: bold; padding: 10px; margin: 10px 0; border-radius: 4px; min-height: 20px; }
+    .success { background: #d4edda; color: #155724; }
+    .error { background: #f8d7da; color: #721c24; }
+    .order-item { background: #f1f3f5; padding: 15px; margin: 15px 0; border-radius: 6px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Jamaica Online Seller Tracker Prototype</h1>
+
+    <div class="section">
+      <h2>New Order</h2>
+      <form id="orderForm">
+        <label>Customer Name</label>
+        <input type="text" id="customerName">
+
+        <label>Phone/WhatsApp</label>
+        <input type="tel" id="customerPhone">
+
+        <label>Platform</label>
+        <select id="platform">
+          <option>Instagram</option><option>WhatsApp</option><option>Facebook</option>
+          <option>TikTok</option><option>7Krave</option><option>Other</option>
+        </select>
+
+        <label>Notes</label>
+        <textarea id="notes" rows="2"></textarea>
+
+        <label>Payment Status</label>
+        <select id="paymentStatus">
+          <option>Pending</option><option>Partial</option><option>Paid - Cash</option>
+          <option>Paid - Transfer</option><option>Paid - Card</option>
+        </select>
+
+        <h3>Items (add at least 1)</h3>
+        <div id="items-container"></div>
+        <button type="button" onclick="addItemRow()">+ Add Item</button>
+
+        <label>Delivery Fee (JMD)</label>
+        <input type="number" id="deliveryFee" value="0" min="0" step="1">
+
+        <div id="summary">Subtotal: J$0.00 | Total: J$0.00</div>
+
+        <button type="submit">Save Order</button>
+        <div id="saveFeedback" class="feedback"></div>
+      </form>
+    </div>
+
+    <div class="section">
+      <h2>Saved Orders</h2>
+      <p id="totalRevenue">Total Revenue: J$0.00 | Orders: 0</p>
+      <button onclick="exportCSV()">Export All to CSV</button>
+      <div id="exportFeedback" class="feedback"></div>
+      <div id="orders-list"></div>
+    </div>
+  </div>
+
+  <script>
+    const { jsPDF } = window.jspdf || {};
+    let orders = JSON.parse(localStorage.getItem('jmSalesOrders')) || [];
+
+    function saveOrders() {
+      localStorage.setItem('jmSalesOrders', JSON.stringify(orders));
+      updateDashboard();
+      renderOrders();
+    }
+
+    function updateDashboard() {
+      const total = orders.reduce((sum, o) => sum + o.total, 0);
+      document.getElementById('totalRevenue').textContent = 
+        `Total Revenue: J$${total.toLocaleString('en-JM', {minimumFractionDigits: 2})} | Orders: ${orders.length}`;
+    }
+
+    function renderOrders() {
+      const list = document.getElementById('orders-list');
+      list.innerHTML = '';
+      orders.forEach((o, i) => {
+        const div = document.createElement('div');
+        div.className = 'order-item';
+        div.innerHTML = `
+          <strong>Order #${i+1} - ${o.date}</strong><br>
+          ${o.customerName} (${o.customerPhone}) - ${o.platform}<br>
+          Status: ${o.paymentStatus} | Total: J$${o.total.toLocaleString('en-JM', {minimumFractionDigits: 2})}<br>
+          <button onclick="generatePDF(${i})">Download PDF</button>
+        `;
+        list.appendChild(div);
+      });
+    }
+
+    function addItemRow() {
+      const container = document.getElementById('items-container');
+      const row = document.createElement('div');
+      row.className = 'item-row';
+      row.innerHTML = `
+        <input type="text" placeholder="Item name" class="item-name">
+        <input type="number" placeholder="Qty" value="1" min="1" class="item-qty">
+        <input type="number" placeholder="Price JMD" value="0" min="0" step="1" class="item-price">
+        <button type="button" class="remove" onclick="this.parentElement.remove(); updateSummary()">X</button>
+      `;
+      container.appendChild(row);
+      updateSummary();
+    }
+
+    function updateSummary() {
+      let subtotal = 0;
+      document.querySelectorAll('.item-row').forEach(r => {
+        subtotal += (Number(r.querySelector('.item-qty').value) || 0) * (Number(r.querySelector('.item-price').value) || 0);
+      });
+      const delivery = Number(document.getElementById('deliveryFee').value) || 0;
+      const total = subtotal + delivery;
+      document.getElementById('summary').textContent = 
+        `Subtotal: J$${subtotal.toLocaleString('en-JM', {minimumFractionDigits: 2})} | Total: J$${total.toLocaleString('en-JM', {minimumFractionDigits: 2})}`;
+    }
+
+    document.getElementById('orderForm').addEventListener('submit', e => {
+      e.preventDefault();
+      const feedback = document.getElementById('saveFeedback');
+      feedback.className = 'feedback';
+      feedback.textContent = 'Processing...';
+
+      const name = document.getElementById('customerName').value.trim();
+      const phone = document.getElementById('customerPhone').value.trim();
+      const items = [];
+
+      document.querySelectorAll('.item-row').forEach(r => {
+        const n = r.querySelector('.item-name').value.trim();
+        const q = Number(r.querySelector('.item-qty').value) || 0;
+        const p = Number(r.querySelector('.item-price').value) || 0;
+        if (n && q > 0) items.push({name: n, qty: q, price: p});
+      });
+
+      if (!name) {
+        feedback.className = 'feedback error';
+        feedback.textContent = 'Customer name is required!';
+        return;
+      }
+      if (!phone) {
+        feedback.className = 'feedback error';
+        feedback.textContent = 'Phone/WhatsApp is required!';
+        return;
+      }
+      if (items.length === 0) {
+        feedback.className = 'feedback error';
+        feedback.textContent = 'Add at least one item with name and qty!';
+        return;
+      }
+
+      const order = {
+        date: new Date().toLocaleString('en-JM'),
+        customerName: name,
+        customerPhone: phone,
+        platform: document.getElementById('platform').value,
+        notes: document.getElementById('notes').value.trim(),
+        paymentStatus: document.getElementById('paymentStatus').value,
+        deliveryFee: Number(document.getElementById('deliveryFee').value) || 0,
+        items,
+        subtotal: items.reduce((s, it) => s + it.qty * it.price, 0),
+        total: items.reduce((s, it) => s + it.qty * it.price, 0) + (Number(document.getElementById('deliveryFee').value) || 0)
+      };
+
+      orders.push(order);
+      saveOrders();
+
+      e.target.reset();
+      document.getElementById('items-container').innerHTML = '';
+      addItemRow();
+
+      feedback.className = 'feedback success';
+      feedback.textContent = `Saved! Order #${orders.length} added. Scroll down to see list or export.`;
+    });
+
+    function generatePDF(index) {
+      if (!jsPDF) {
+        alert("PDF library failed to load - check internet");
+        return;
+      }
+      const order = orders[index];
+      const doc = new jsPDF();
+      let y = 20;
+      doc.setFontSize(18); doc.text("Receipt", 105, y, {align: "center"}); y += 15;
+      doc.setFontSize(12);
+      doc.text(`Order #${index+1} - ${order.date}`, 20, y); y += 10;
+      doc.text(`${order.customerName} (${order.customerPhone})`, 20, y); y += 8;
+      doc.text(`Platform: ${order.platform} | ${order.paymentStatus}`, 20, y); y += 12;
+      doc.text("Items:", 20, y); y += 8;
+      order.items.forEach(it => {
+        doc.text(`${it.qty} x ${it.name} @ J$${it.price} = J$${(it.qty*it.price).toFixed(2)}`, 25, y); y += 8;
+      });
+      y += 5;
+      doc.text(`Subtotal: J$${order.subtotal.toFixed(2)}`, 20, y); y += 8;
+      doc.text(`Delivery: J$${order.deliveryFee.toFixed(2)}`, 20, y); y += 8;
+      doc.setFontSize(14); doc.text(`TOTAL: J$${order.total.toFixed(2)}`, 20, y);
+      doc.save(`receipt_${index+1}.pdf`);
+    }
+
+    function exportCSV() {
+      const feedback = document.getElementById('exportFeedback');
+      feedback.className = 'feedback';
+      feedback.textContent = '';
+
+      if (orders.length === 0) {
+        feedback.className = 'feedback error';
+        feedback.textContent = 'No orders to export yet - save some first!';
+        return;
+      }
+
+      let csv = 'Order#,Date,Name,Phone,Platform,Status,Items,Subtotal,Delivery,Total,Notes\n';
+      orders.forEach((o, i) => {
+        const itemsStr = o.items.map(it => `${it.qty}x ${it.name} @${it.price}`).join('; ');
+        csv += `${i+1},${o.date},"${o.customerName.replace(/"/g,'""')}","${o.customerPhone}",${o.platform},${o.paymentStatus},"${itemsStr}",${o.subtotal},${o.deliveryFee},${o.total},"${(o.notes || '').replace(/"/g,'""')}"\n`;
+      });
+
+      const blob = new Blob([csv], {type: 'text/csv'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'sales_export.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+
+      feedback.className = 'feedback success';
+      feedback.textContent = 'CSV downloaded! Check your downloads folder.';
+    }
+
+    // Init
+    addItemRow();
+    updateDashboard();
+    renderOrders();
+    document.getElementById('items-container').addEventListener('input', updateSummary);
+    document.getElementById('deliveryFee').addEventListener('input', updateSummary);
+  </script>
+</body>
+</html>
