@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Seller Tracker Admin</title>
+  <link rel="stylesheet" href="admin.css" />
+</head>
+<body>
+  <main class="admin-container">
+    <section id="loginCard" class="card">
+      <h1>Admin Monitor</h1>
+      <p class="sub">Sign in to monitor beta signups across devices.</p>
+
+      <label for="adminUser">Username</label>
+      <input id="adminUser" type="text" placeholder="Admin username" />
+
+      <label for="adminPass">Password</label>
+      <input id="adminPass" type="password" placeholder="Admin password" />
+
+      <button id="loginBtn" class="btn primary">Login</button>
+      <p id="loginFeedback" class="feedback"></p>
+    </section>
+
+    <section id="dashboard" class="card hidden">
+      <div class="dashboard-top">
+        <div>
+          <h2>Signup Monitor</h2>
+          <p class="sub">Live view of all beta signups (auto-refresh every 15 seconds).</p>
+        </div>
+        <div class="actions">
+          <button id="refreshBtn" class="btn secondary">Refresh now</button>
+          <button id="logoutBtn" class="btn danger">Logout</button>
+        </div>
+      </div>
+
+      <div class="stats">
+        <article class="stat">
+          <span class="label">Total Signups</span>
+          <strong id="totalCount">0</strong>
+        </article>
+        <article class="stat">
+          <span class="label">Latest Signup</span>
+          <strong id="latestSignup">—</strong>
+        </article>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Source</th>
+              <th>Created</th>
+            </tr>
+          </thead>
+          <tbody id="signupTableBody"></tbody>
+        </table>
+      </div>
+      <p id="dashboardFeedback" class="feedback"></p>
+    </section>
+  </main>
+
+  <script src="admin.js"></script>
+</body>
+</html>
