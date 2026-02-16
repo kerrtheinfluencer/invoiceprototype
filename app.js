@@ -15,36 +15,30 @@ let businessInfo = JSON.parse(localStorage.getItem('businessInfo')) || {
 let editingOrderIndex = null;
 let pendingDeleteIndex = null;
 
-// Load saved business info into form
-const bizNameEl = document.getElementById('bizName');
-const bizEmailEl = document.getElementById('bizEmail');
-const bizSocialEl = document.getElementById('bizSocial');
-const bizSocialPlatformEl = document.getElementById('bizSocialPlatform');
-const bizAreaCodeEl = document.getElementById('bizAreaCode');
-const bizPhoneEl = document.getElementById('bizPhone');
-const bizNoteEl = document.getElementById('bizNote');
+const orderForm = document.getElementById('orderForm');
+const feedbackEl = document.getElementById('feedback');
+const itemsContainer = document.getElementById('items-container');
+const deliveryFeeEl = document.getElementById('deliveryFee');
+const saveOrderBtn = document.getElementById('saveOrderBtn');
+const cancelEditBtn = document.getElementById('cancelEditBtn');
+const searchOrdersEl = document.getElementById('searchOrders');
+const dateFilterEl = document.getElementById('dateFilter');
+const ordersListEl = document.getElementById('orders-list');
+const totalRevenueEl = document.getElementById('totalRevenue');
 
-bizNameEl.value = businessInfo.name || '';
-bizEmailEl.value = businessInfo.email || '';
-bizSocialEl.value = businessInfo.social ? businessInfo.social.replace(/^@/, '') : '';
-bizSocialPlatformEl.value = businessInfo.socialPlatform || '';
-bizAreaCodeEl.value = businessInfo.areaCode || '+1-876-';
-bizPhoneEl.value = businessInfo.phone
-  ? businessInfo.phone.replace(/\D/g, '').slice(businessInfo.areaCode.replace(/\D/g, '').length)
-  : '';
-bizNoteEl.value = businessInfo.note || '';
+function formatCurrency(value) {
+  return `J$${value.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`;
+}
 
 function getOrderDate(order) {
   if (order.createdAt) {
-    const d = new Date(order.createdAt);
-    if (!Number.isNaN(d.getTime())) return d;
+    const parsed = new Date(order.createdAt);
+    if (!Number.isNaN(parsed.getTime())) return parsed;
   }
-
   if (order.date) {
-    const d = new Date(order.date);
-    if (!Number.isNaN(d.getTime())) return d;
+    const parsed = new Date(order.date);
+    if (!Number.isNaN(parsed.getTime())) return parsed;
   }
-
   return null;
 }
 
@@ -54,84 +48,63 @@ function isSameDay(a, b) {
     && a.getDate() === b.getDate();
 }
 
-function formatCurrency(value) {
-  return `J$${value.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`;
+function setFeedback(message, type = '') {
+  feedbackEl.textContent = message;
+  feedbackEl.className = `feedback${type ? ` ${type}` : ''}`;
 }
 
-// Update prefix displays
 function updatePhonePrefixes() {
   const code = businessInfo.areaCode || '+1-876-';
   document.getElementById('customerPhonePrefix').textContent = code;
   document.getElementById('bizPhonePrefix').textContent = code;
 }
-updatePhonePrefixes();
 
-// Show preview if logo exists
-if (businessInfo.logoData) {
-  document.getElementById('logoPreview').src = businessInfo.logoData;
-  document.getElementById('logoPreview').style.display = 'block';
-}
-
-// Auto-format phone inputs
 function formatPhone(input) {
   let value = input.value.replace(/\D/g, '');
   if (value.length > 7) value = value.slice(0, 7);
-
-  let formatted = '';
-  if (value.length > 0) {
-    formatted = value.slice(0, 3);
-    if (value.length > 3) formatted += '-' + value.slice(3);
-  }
-
-  input.value = formatted;
+  input.value = value.length > 3 ? `${value.slice(0, 3)}-${value.slice(3)}` : value;
 }
 
-document.getElementById('customerPhone').addEventListener('input', function () {
-  formatPhone(this);
-});
+function updateSummary() {
+  let subtotal = 0;
+  document.querySelectorAll('.item-row').forEach((row) => {
+    const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
+    const price = parseFloat(row.querySelector('.item-price').value) || 0;
+    subtotal += qty * price;
+  });
+  const delivery = parseFloat(deliveryFeeEl.value) || 0;
+  const total = subtotal + delivery;
+  document.getElementById('summary').textContent = `Subtotal: J$${subtotal.toFixed(2)} · Total: J$${total.toFixed(2)}`;
+}
 
-document.getElementById('bizPhone').addEventListener('input', function () {
-  formatPhone(this);
-});
+function addItemRow(item = null) {
+  const row = document.createElement('div');
+  row.className = 'item-row';
+  row.innerHTML = `
+    <button type="button" class="remove-btn" aria-label="Remove item">×</button>
+    <label>Item name / description</label>
+    <input type="text" class="item-name" placeholder="e.g. Product name" value="${item?.name ? item.name.replace(/"/g, '&quot;') : ''}">
+    <div class="item-grid">
+      <div>
+        <label>Qty</label>
+        <input type="number" class="item-qty" min="1" value="${item?.qty ?? 1}">
+      </div>
+      <div>
+        <label>Price (JMD)</label>
+        <input type="number" class="item-price" min="0" step="0.01" value="${item?.price ?? 0}">
+      </div>
+    </div>
+  `;
 
-// Handle logo upload
-document.getElementById('bizLogoUpload').addEventListener('change', function (e) {
-  const file = e.target.files[0];
-  if (!file) return;
+  row.querySelector('.remove-btn').addEventListener('click', () => {
+    row.remove();
+    updateSummary();
+  });
+  row.querySelector('.item-qty').addEventListener('input', updateSummary);
+  row.querySelector('.item-price').addEventListener('input', updateSummary);
 
-  const reader = new FileReader();
-  reader.onload = function (event) {
-    const dataUrl = event.target.result;
-    document.getElementById('logoPreview').src = dataUrl;
-    document.getElementById('logoPreview').style.display = 'block';
-    businessInfo.logoData = dataUrl;
-  };
-  reader.readAsDataURL(file);
-});
-
-function saveBusinessInfo() {
-  let socialHandle = bizSocialEl.value.trim();
-  if (socialHandle && !socialHandle.startsWith('@')) {
-    socialHandle = '@' + socialHandle;
-  }
-
-  const areaCode = bizAreaCodeEl.value.trim() || '+1-876-';
-
-  businessInfo = {
-    name: bizNameEl.value.trim() || '',
-    email: bizEmailEl.value.trim() || '',
-    social: socialHandle,
-    socialPlatform: bizSocialPlatformEl.value || '',
-    areaCode,
-    phone: bizPhoneEl.value.trim() ? areaCode + bizPhoneEl.value.trim() : '',
-    logoData: businessInfo.logoData || '',
-    note: bizNoteEl.value.trim() || 'Thank you for your order!'
-  };
-
-  localStorage.setItem('businessInfo', JSON.stringify(businessInfo));
-  updatePhonePrefixes();
-  alert('Business information saved!');
-  document.getElementById('businessSettings').style.display = 'none';
+  itemsContainer.appendChild(row);
+  updateSummary();
 }
 
 function saveOrders() {
@@ -141,103 +114,102 @@ function saveOrders() {
 }
 
 function updateDashboard() {
-  const total = orders.reduce((sum, o) => sum + o.total, 0);
-  document.getElementById('totalRevenue').textContent = `Total Revenue: ${formatCurrency(total)} | Orders: ${orders.length}`;
+  const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
+  totalRevenueEl.textContent = `Total Revenue: ${formatCurrency(totalRevenue)} · Orders: ${orders.length}`;
 
   const now = new Date();
   const todayRevenue = orders.reduce((sum, order) => {
-    const date = getOrderDate(order);
-    return date && isSameDay(date, now) ? sum + order.total : sum;
+    const d = getOrderDate(order);
+    return d && isSameDay(d, now) ? sum + order.total : sum;
   }, 0);
 
-  const pendingPayments = orders.filter(order => ['Pending', 'Partial'].includes(order.paymentStatus)).length;
+  const pending = orders.filter((order) => ['Pending', 'Partial'].includes(order.paymentStatus)).length;
 
-  const platformCounts = orders.reduce((acc, order) => {
+  const platformCount = orders.reduce((acc, order) => {
     const key = order.platform || 'Other';
     acc[key] = (acc[key] || 0) + 1;
     return acc;
   }, {});
 
   let topPlatform = '—';
-  let topCount = 0;
-  Object.entries(platformCounts).forEach(([platform, count]) => {
-    if (count > topCount) {
-      topCount = count;
+  let max = 0;
+  Object.entries(platformCount).forEach(([platform, count]) => {
+    if (count > max) {
+      max = count;
       topPlatform = platform;
     }
   });
 
   document.getElementById('todayRevenue').textContent = formatCurrency(todayRevenue);
-  document.getElementById('pendingPayments').textContent = String(pendingPayments);
+  document.getElementById('pendingPayments').textContent = String(pending);
   document.getElementById('topPlatform').textContent = topPlatform;
 }
 
 function getFilteredOrders() {
-  const searchTerm = document.getElementById('searchOrders').value.trim().toLowerCase();
-  const dateFilter = document.getElementById('dateFilter').value;
+  const q = searchOrdersEl.value.trim().toLowerCase();
+  const dateFilter = dateFilterEl.value;
   const now = new Date();
 
-  return orders
-    .map((order, index) => ({ order, index }))
-    .filter(({ order }) => {
-      // date filter
-      const date = getOrderDate(order);
-      if (dateFilter === 'today' && (!date || !isSameDay(date, now))) return false;
-      if (dateFilter === 'week') {
-        if (!date) return false;
-        const diffDays = (now - date) / (1000 * 60 * 60 * 24);
-        if (diffDays > 7 || diffDays < 0) return false;
-      }
-      if (dateFilter === 'month') {
-        if (!date) return false;
-        const diffDays = (now - date) / (1000 * 60 * 60 * 24);
-        if (diffDays > 30 || diffDays < 0) return false;
-      }
+  return orders.map((order, index) => ({ order, index })).filter(({ order }) => {
+    const d = getOrderDate(order);
+    if (dateFilter === 'today' && (!d || !isSameDay(d, now))) return false;
+    if (dateFilter === 'week') {
+      if (!d) return false;
+      const diff = (now - d) / (1000 * 60 * 60 * 24);
+      if (diff < 0 || diff > 7) return false;
+    }
+    if (dateFilter === 'month') {
+      if (!d) return false;
+      const diff = (now - d) / (1000 * 60 * 60 * 24);
+      if (diff < 0 || diff > 30) return false;
+    }
 
-      if (!searchTerm) return true;
+    if (!q) return true;
 
-      const itemNames = (order.items || []).map(item => item.name).join(' ').toLowerCase();
-      const haystack = [
-        order.customerName,
-        order.customerPhone,
-        order.platform,
-        order.paymentStatus,
-        order.notes,
-        itemNames
-      ].join(' ').toLowerCase();
-
-      return haystack.includes(searchTerm);
-    });
+    const itemText = (order.items || []).map((i) => i.name).join(' ');
+    return [
+      order.customerName,
+      order.customerPhone,
+      order.platform,
+      order.paymentStatus,
+      order.notes,
+      itemText
+    ].join(' ').toLowerCase().includes(q);
+  });
 }
 
 function renderOrders() {
-  const list = document.getElementById('orders-list');
-  list.innerHTML = '';
+  ordersListEl.innerHTML = '';
+  const filtered = getFilteredOrders();
 
-  const filteredOrders = getFilteredOrders();
-
-  if (filteredOrders.length === 0) {
-    list.innerHTML = '<p class="empty-orders">No matching orders found.</p>';
+  if (filtered.length === 0) {
+    ordersListEl.innerHTML = '<p class="empty-orders">No matching orders found.</p>';
     return;
   }
 
-  filteredOrders.forEach(({ order, index }) => {
-    const div = document.createElement('div');
-    div.className = 'order-item';
-    div.innerHTML = `
-      <strong>Order #${index + 1} - ${order.date}</strong><br>
+  filtered.forEach(({ order, index }) => {
+    const card = document.createElement('div');
+    card.className = 'order-item';
+    card.innerHTML = `
+      <strong>Order #${index + 1} · ${order.date}</strong><br>
       Customer: ${order.customerName}<br>
       Phone: ${order.customerPhone}<br>
-      Platform: ${order.platform} | Status: ${order.paymentStatus}<br>
+      Platform: ${order.platform} · Status: ${order.paymentStatus}<br>
       Total: ${formatCurrency(order.total)}<br>
       <div class="btn-group">
-        <button class="download-btn" onclick="generatePDF(${index})">Download PDF</button>
-        <button class="share-btn" onclick="shareReceipt(${index})">Share Receipt</button>
-        <button class="edit-btn" onclick="editOrder(${index})">Edit</button>
-        <button class="delete-btn" onclick="confirmDeleteOrder(${index})">Delete</button>
+        <button class="btn download-btn" type="button" data-action="download">Download PDF</button>
+        <button class="btn share-btn" type="button" data-action="share">Share Receipt</button>
+        <button class="btn edit-btn" type="button" data-action="edit">Edit</button>
+        <button class="btn delete-btn" type="button" data-action="delete">Delete</button>
       </div>
     `;
-    list.appendChild(div);
+
+    card.querySelector('[data-action="download"]').addEventListener('click', () => generatePDF(index));
+    card.querySelector('[data-action="share"]').addEventListener('click', () => shareReceipt(index));
+    card.querySelector('[data-action="edit"]').addEventListener('click', () => editOrder(index));
+    card.querySelector('[data-action="delete"]').addEventListener('click', () => openDeleteModal(index));
+
+    ordersListEl.appendChild(card);
   });
 }
 
@@ -250,7 +222,7 @@ function createReceiptDocument(index) {
     try {
       doc.addImage(businessInfo.logoData, 'PNG', 80, y, 50, 50);
       y += 55;
-    } catch (e) { /* ignore image failures */ }
+    } catch (e) { /* ignore */ }
   }
 
   doc.setFontSize(18);
@@ -273,22 +245,22 @@ function createReceiptDocument(index) {
   y += 12;
 
   doc.setFontSize(12);
-  doc.text(`Order #${index + 1} - ${order.date}`, 20, y);
+  doc.text(`Order #${index + 1} · ${order.date}`, 20, y);
   y += 10;
   doc.text(`Customer: ${order.customerName}`, 20, y);
   doc.text(`Phone: ${order.customerPhone}`, 20, y += 7);
   doc.text(`Platform: ${order.platform}`, 20, y += 7);
   if (order.notes) doc.text(`Notes: ${order.notes}`, 20, y += 7);
-  y += 12;
+  y += 10;
 
   doc.text('Items:', 20, y);
-  y += 8;
-  order.items.forEach(item => {
-    doc.text(`${item.qty} × ${item.name} @ J$${item.price.toFixed(2)} = J$${(item.qty * item.price).toFixed(2)}`, 25, y);
-    y += 8;
+  y += 7;
+  order.items.forEach((item) => {
+    doc.text(`${item.qty} × ${item.name} @ J$${item.price.toFixed(2)} = J$${(item.qty * item.price).toFixed(2)}`, 24, y);
+    y += 7;
   });
 
-  y += 8;
+  y += 7;
   doc.text(`Subtotal: J$${order.subtotal.toFixed(2)}`, 20, y);
   doc.text(`Delivery: J$${order.deliveryFee.toFixed(2)}`, 20, y += 8);
   doc.setFontSize(14);
@@ -297,73 +269,17 @@ function createReceiptDocument(index) {
 
   doc.setFontSize(10);
   doc.setTextColor(0);
-  let receiptNote = businessInfo.note || 'Thank you for your order!';
-  if (businessInfo.social) {
-    const platform = businessInfo.socialPlatform || 'social media';
-    receiptNote = `Thank you! Follow us on ${platform} ${businessInfo.social} for more.`;
-  }
-  doc.text(receiptNote, 105, y += 15, { align: 'center' });
-
+  doc.text(businessInfo.note || 'Thank you for your order!', 105, y += 14, { align: 'center' });
   return doc;
 }
 
 function generatePDF(index) {
-  const doc = createReceiptDocument(index);
-  doc.save(`receipt_${index + 1}.pdf`);
-}
-
-function exportCSV() {
-  if (orders.length === 0) {
-    alert('No orders to export yet.');
-    return;
-  }
-
-  const headers = [
-    'Order #', 'Date', 'Customer Name', 'Customer Phone', 'Platform', 'Payment Status',
-    'Notes', 'Items', 'Subtotal', 'Delivery Fee', 'Total'
-  ];
-
-  const csvEscape = (value) => {
-    const text = String(value ?? '');
-    return `"${text.replace(/"/g, '""')}"`;
-  };
-
-  const rows = orders.map((order, index) => {
-    const itemsSummary = order.items
-      .map(item => `${item.qty}x ${item.name} @ J$${item.price.toFixed(2)}`)
-      .join(' | ');
-
-    return [
-      index + 1,
-      order.date,
-      order.customerName,
-      order.customerPhone,
-      order.platform,
-      order.paymentStatus,
-      order.notes || '',
-      itemsSummary,
-      order.subtotal.toFixed(2),
-      order.deliveryFee.toFixed(2),
-      order.total.toFixed(2)
-    ].map(csvEscape).join(',');
-  });
-
-  const csvContent = [headers.map(csvEscape).join(','), ...rows].join('\n');
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = `seller_tracker_orders_${new Date().toISOString().slice(0, 10)}.csv`;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
+  createReceiptDocument(index).save(`receipt_${index + 1}.pdf`);
 }
 
 async function shareReceipt(index) {
   const order = orders[index];
   const doc = createReceiptDocument(index);
-
   const pdfBlob = doc.output('blob');
   const pdfFile = new File([pdfBlob], `receipt_${index + 1}.pdf`, { type: 'application/pdf' });
 
@@ -374,7 +290,7 @@ async function shareReceipt(index) {
         title: `Receipt #${index + 1}`,
         text: `Order receipt for ${order.customerName}`
       });
-    } catch (err) {
+    } catch {
       doc.save(`receipt_${index + 1}.pdf`);
     }
   } else {
@@ -382,55 +298,94 @@ async function shareReceipt(index) {
   }
 }
 
+function exportCSV() {
+  if (orders.length === 0) {
+    alert('No orders to export yet.');
+    return;
+  }
+
+  const headers = [
+    'Order #', 'Date', 'Customer Name', 'Customer Phone', 'Platform',
+    'Payment Status', 'Notes', 'Items', 'Subtotal', 'Delivery Fee', 'Total'
+  ];
+
+  const csvEscape = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+
+  const rows = orders.map((order, i) => {
+    const items = order.items.map((item) => `${item.qty}x ${item.name} @ J$${item.price.toFixed(2)}`).join(' | ');
+    return [
+      i + 1,
+      order.date,
+      order.customerName,
+      order.customerPhone,
+      order.platform,
+      order.paymentStatus,
+      order.notes || '',
+      items,
+      order.subtotal.toFixed(2),
+      order.deliveryFee.toFixed(2),
+      order.total.toFixed(2)
+    ].map(csvEscape).join(',');
+  });
+
+  const csv = [headers.map(csvEscape).join(','), ...rows].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `seller_tracker_orders_${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function resetOrderForm() {
+  orderForm.reset();
+  editingOrderIndex = null;
+  saveOrderBtn.textContent = 'Save Order';
+  cancelEditBtn.classList.add('hidden');
+  itemsContainer.innerHTML = '';
+  addItemRow();
+  setFeedback('');
+}
+
 function editOrder(index) {
   const order = orders[index];
   if (!order) return;
-
   editingOrderIndex = index;
 
   document.getElementById('customerName').value = order.customerName || '';
   const areaCode = businessInfo.areaCode || '+1-876-';
   document.getElementById('customerPhone').value = (order.customerPhone || '').replace(areaCode, '');
   formatPhone(document.getElementById('customerPhone'));
-
   document.getElementById('platform').value = order.platform || 'Instagram';
-  document.getElementById('notes').value = order.notes || '';
   document.getElementById('paymentStatus').value = order.paymentStatus || 'Pending';
-  document.getElementById('deliveryFee').value = order.deliveryFee || 0;
+  document.getElementById('notes').value = order.notes || '';
+  deliveryFeeEl.value = order.deliveryFee || 0;
 
-  const itemsContainer = document.getElementById('items-container');
   itemsContainer.innerHTML = '';
   (order.items || []).forEach((item) => addItemRow(item));
 
-  document.getElementById('saveOrderBtn').textContent = 'Update Order';
-  document.getElementById('cancelEditBtn').style.display = 'block';
-  updateSummary();
+  saveOrderBtn.textContent = 'Update Order';
+  cancelEditBtn.classList.remove('hidden');
+  setFeedback('Editing selected order...', 'success');
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-function resetOrderForm() {
-  const form = document.getElementById('orderForm');
-  form.reset();
-  document.getElementById('items-container').innerHTML = '';
-  addItemRow();
-  editingOrderIndex = null;
-  document.getElementById('saveOrderBtn').textContent = 'Save Order';
-  document.getElementById('cancelEditBtn').style.display = 'none';
-  updateSummary();
-}
-
-function confirmDeleteOrder(index) {
+function openDeleteModal(index) {
   pendingDeleteIndex = index;
-  const order = orders[index];
-  document.getElementById('confirmMessage').textContent = `Delete order for ${order?.customerName || 'this customer'}? This cannot be undone.`;
-  document.getElementById('confirmModal').style.display = 'flex';
-  document.getElementById('confirmModal').setAttribute('aria-hidden', 'false');
+  document.getElementById('confirmMessage').textContent = `Delete order for ${orders[index]?.customerName || 'this customer'}? This cannot be undone.`;
+  const modal = document.getElementById('confirmModal');
+  modal.classList.remove('hidden');
+  modal.setAttribute('aria-hidden', 'false');
 }
 
 function closeDeleteModal() {
   pendingDeleteIndex = null;
-  document.getElementById('confirmModal').style.display = 'none';
-  document.getElementById('confirmModal').setAttribute('aria-hidden', 'true');
+  const modal = document.getElementById('confirmModal');
+  modal.classList.add('hidden');
+  modal.setAttribute('aria-hidden', 'true');
 }
 
 function deleteOrderConfirmed() {
@@ -440,111 +395,135 @@ function deleteOrderConfirmed() {
   closeDeleteModal();
 }
 
-function addItemRow(item = null) {
-  const container = document.getElementById('items-container');
-  const row = document.createElement('div');
-  row.className = 'item-row';
-  row.innerHTML = `
-    <button type="button" class="remove-btn" onclick="this.parentElement.remove(); updateSummary()">X</button>
+function saveBusinessInfo() {
+  let social = document.getElementById('bizSocial').value.trim();
+  if (social && !social.startsWith('@')) social = `@${social}`;
 
-    <label>Item name / description</label>
-    <input type="text" placeholder="e.g. Product name" class="item-name" value="${item?.name ? item.name.replace(/"/g, '&quot;') : ''}">
+  const areaCode = document.getElementById('bizAreaCode').value.trim() || '+1-876-';
+  const bizPhone = document.getElementById('bizPhone').value.trim();
 
-    <div class="item-grid">
-      <div>
-        <label>Qty</label>
-        <input type="number" placeholder="1" value="${item?.qty ?? 1}" min="1" class="item-qty">
-      </div>
-      <div>
-        <label>Price (JMD)</label>
-        <input type="number" placeholder="0" value="${item?.price ?? 0}" min="0" step="0.01" class="item-price">
-      </div>
-    </div>
-  `;
-  container.appendChild(row);
+  businessInfo = {
+    name: document.getElementById('bizName').value.trim(),
+    email: document.getElementById('bizEmail').value.trim(),
+    social,
+    socialPlatform: document.getElementById('bizSocialPlatform').value || '',
+    areaCode,
+    phone: bizPhone ? areaCode + bizPhone : '',
+    logoData: businessInfo.logoData || '',
+    note: document.getElementById('bizNote').value.trim() || 'Thank you for your order!'
+  };
 
-  row.querySelector('.item-qty').addEventListener('input', updateSummary);
-  row.querySelector('.item-price').addEventListener('input', updateSummary);
-
-  updateSummary();
+  localStorage.setItem('businessInfo', JSON.stringify(businessInfo));
+  updatePhonePrefixes();
+  alert('Business information saved!');
+  document.getElementById('businessSettings').classList.add('hidden');
 }
 
-function updateSummary() {
-  let subtotal = 0;
-  document.querySelectorAll('.item-row').forEach((row) => {
-    const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
-    const price = parseFloat(row.querySelector('.item-price').value) || 0;
-    subtotal += qty * price;
-  });
-
-  const delivery = parseFloat(document.getElementById('deliveryFee').value) || 0;
-  const total = subtotal + delivery;
-  document.getElementById('summary').textContent = `Subtotal: J$${subtotal.toFixed(2)} | Total: J$${total.toFixed(2)}`;
-}
-
-document.getElementById('orderForm').addEventListener('submit', (e) => {
+orderForm.addEventListener('submit', (e) => {
   e.preventDefault();
 
-  const feedback = document.getElementById('feedback');
-  const items = [];
+  const customerName = document.getElementById('customerName').value.trim();
+  const customerPhone = document.getElementById('customerPhone').value.trim();
+  if (!customerName) return setFeedback('Customer name is required', 'error');
 
+  const items = [];
   document.querySelectorAll('.item-row').forEach((row) => {
     const name = row.querySelector('.item-name').value.trim();
     const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
     const price = parseFloat(row.querySelector('.item-price').value) || 0;
     if (name && qty > 0) items.push({ name, qty, price });
   });
-
-  if (!document.getElementById('customerName').value.trim()) {
-    feedback.textContent = 'Customer name is required';
-    feedback.className = 'feedback error';
-    return;
-  }
-
-  if (items.length === 0) {
-    feedback.textContent = 'Add at least one item';
-    feedback.className = 'feedback error';
-    return;
-  }
+  if (items.length === 0) return setFeedback('Add at least one item', 'error');
 
   const areaCode = businessInfo.areaCode || '+1-876-';
-  const customerPhoneFull = areaCode + document.getElementById('customerPhone').value.trim();
+  const deliveryFee = parseFloat(deliveryFeeEl.value) || 0;
+  const subtotal = items.reduce((sum, item) => sum + item.qty * item.price, 0);
 
   const order = {
-    date: new Date().toLocaleString('en-JM'),
     createdAt: new Date().toISOString(),
-    customerName: document.getElementById('customerName').value.trim(),
-    customerPhone: customerPhoneFull,
+    date: new Date().toLocaleString('en-JM'),
+    customerName,
+    customerPhone: areaCode + customerPhone,
     platform: document.getElementById('platform').value,
     notes: document.getElementById('notes').value.trim(),
     paymentStatus: document.getElementById('paymentStatus').value,
-    deliveryFee: parseFloat(document.getElementById('deliveryFee').value) || 0,
+    deliveryFee,
     items,
-    subtotal: items.reduce((sum, item) => sum + item.qty * item.price, 0),
-    total: items.reduce((sum, item) => sum + item.qty * item.price, 0)
-      + (parseFloat(document.getElementById('deliveryFee').value) || 0)
+    subtotal,
+    total: subtotal + deliveryFee
   };
 
   if (editingOrderIndex !== null) {
     orders[editingOrderIndex] = { ...orders[editingOrderIndex], ...order };
-    feedback.textContent = 'Order updated successfully!';
+    setFeedback('Order updated successfully!', 'success');
   } else {
     orders.push(order);
-    feedback.textContent = 'Order saved successfully!';
+    setFeedback('Order saved successfully!', 'success');
   }
 
-  feedback.className = 'feedback success';
   saveOrders();
   resetOrderForm();
 });
 
-// Init
+// Business settings UI
+const bizModal = document.getElementById('businessSettings');
+const openBizBtn = document.getElementById('openBusinessSettings');
+const closeBizBtn = document.getElementById('closeSettings');
+
+openBizBtn.addEventListener('click', () => {
+  bizModal.classList.remove('hidden');
+  bizModal.setAttribute('aria-hidden', 'false');
+});
+closeBizBtn.addEventListener('click', () => {
+  bizModal.classList.add('hidden');
+  bizModal.setAttribute('aria-hidden', 'true');
+});
+
+document.getElementById('saveBusinessBtn').addEventListener('click', saveBusinessInfo);
+document.getElementById('exportCsvBtn').addEventListener('click', exportCSV);
+document.getElementById('addItemBtn').addEventListener('click', () => addItemRow());
+cancelEditBtn.addEventListener('click', resetOrderForm);
+searchOrdersEl.addEventListener('input', renderOrders);
+dateFilterEl.addEventListener('change', renderOrders);
+deliveryFeeEl.addEventListener('input', updateSummary);
+
+document.getElementById('confirmDeleteBtn').addEventListener('click', deleteOrderConfirmed);
+document.getElementById('cancelDeleteBtn').addEventListener('click', closeDeleteModal);
+
+// init business fields
+document.getElementById('bizName').value = businessInfo.name || '';
+document.getElementById('bizEmail').value = businessInfo.email || '';
+document.getElementById('bizSocial').value = businessInfo.social ? businessInfo.social.replace(/^@/, '') : '';
+document.getElementById('bizSocialPlatform').value = businessInfo.socialPlatform || '';
+document.getElementById('bizAreaCode').value = businessInfo.areaCode || '+1-876-';
+const bizDigits = businessInfo.phone ? businessInfo.phone.replace(/\D/g, '') : '';
+const areaDigits = (businessInfo.areaCode || '+1-876-').replace(/\D/g, '');
+document.getElementById('bizPhone').value = bizDigits.startsWith(areaDigits) ? bizDigits.slice(areaDigits.length) : '';
+document.getElementById('bizNote').value = businessInfo.note || '';
+
+if (businessInfo.logoData) {
+  const preview = document.getElementById('logoPreview');
+  preview.src = businessInfo.logoData;
+  preview.style.display = 'block';
+}
+
+document.getElementById('bizLogoUpload').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ({ target }) => {
+    businessInfo.logoData = target.result;
+    const preview = document.getElementById('logoPreview');
+    preview.src = businessInfo.logoData;
+    preview.style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+});
+
+document.getElementById('customerPhone').addEventListener('input', function () { formatPhone(this); });
+document.getElementById('bizPhone').addEventListener('input', function () { formatPhone(this); });
+
+updatePhonePrefixes();
 addItemRow();
 updateDashboard();
 renderOrders();
-document.getElementById('deliveryFee').addEventListener('input', updateSummary);
-document.getElementById('searchOrders').addEventListener('input', renderOrders);
-document.getElementById('dateFilter').addEventListener('change', renderOrders);
-document.getElementById('cancelEditBtn').addEventListener('click', resetOrderForm);
-document.getElementById('confirmDeleteBtn').addEventListener('click', deleteOrderConfirmed);
-document.getElementById('cancelDeleteBtn').addEventListener('click', closeDeleteModal);
