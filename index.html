@@ -8,303 +8,8 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-  <style>
-    :root {
-      --green-dark: #006400;
-      --green-med: #228B22;
-      --gold: #d4af37;
-      --bg: #0a0a0a;
-      --card: #111111;
-      --border: #2a2a2a;
-      --text: #f0f0f0;
-      --text-light: #bbbbbb;
-      --red: #c0392b;
-      --shadow: 0 8px 24px rgba(0,0,0,0.6);
-    }
+    <link rel="stylesheet" href="styles.css" />
 
-    * { margin:0; padding:0; box-sizing:border-box; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      padding: 32px 16px;
-      line-height: 1.6;
-    }
-
-    .container { max-width: 1000px; margin: 0 auto; }
-
-    header {
-      text-align: center;
-      margin-bottom: 40px;
-    }
-
-    h1 {
-      font-size: 2.8rem;
-      font-weight: 800;
-      background: linear-gradient(90deg, var(--green-dark), var(--gold), var(--green-med));
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-      margin-bottom: 8px;
-    }
-
-    .intro {
-      color: var(--text-light);
-      font-size: 1.1rem;
-      max-width: 600px;
-      margin: 0 auto;
-    }
-
-    .menu-btn {
-      background: #1e90ff;
-      color: white;
-      border: none;
-      padding: 12px 24px;
-      border-radius: 10px;
-      font-size: 1rem;
-      cursor: pointer;
-      margin: 16px auto;
-      display: block;
-    }
-
-    .menu-btn:hover { background: #1c86ee; }
-
-    .card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 32px;
-      margin: 32px 0;
-      box-shadow: var(--shadow);
-    }
-
-    h2 {
-      font-size: 1.9rem;
-      margin-bottom: 24px;
-      color: white;
-      position: relative;
-      display: inline-block;
-    }
-
-    h2:after {
-      content: '';
-      position: absolute;
-      bottom: -8px;
-      left: 0;
-      width: 60px;
-      height: 3px;
-      background: var(--gold);
-      border-radius: 2px;
-    }
-
-    label {
-      display: block;
-      font-size: 1.05rem;
-      font-weight: 600;
-      margin: 20px 0 8px;
-      color: #ddd;
-    }
-
-    input, select, textarea {
-      width: 100%;
-      padding: 14px 16px;
-      background: #1a1a1a;
-      border: 1px solid #444;
-      border-radius: 10px;
-      color: white;
-      font-size: 1rem;
-      transition: all 0.2s;
-    }
-
-    input:focus, select:focus, textarea:focus {
-      outline: none;
-      border-color: var(--gold);
-      box-shadow: 0 0 0 3px rgba(212,175,55,0.15);
-    }
-
-    .phone-wrapper {
-      position: relative;
-    }
-
-    .phone-prefix {
-      position: absolute;
-      left: 16px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: #888;
-      pointer-events: none;
-      font-weight: bold;
-    }
-
-    .phone-input {
-      padding-left: 120px !important;
-    }
-
-    .btn {
-      background: var(--green-dark);
-      color: white;
-      border: none;
-      padding: 14px 28px;
-      border-radius: 10px;
-      font-size: 1.05rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-      margin: 12px 0;
-      width: 100%;
-    }
-
-    .btn:hover {
-      background: var(--green-med);
-      transform: translateY(-1px);
-      box-shadow: 0 6px 16px rgba(0,100,0,0.4);
-    }
-
-    .share-btn {
-      background: #25D366; /* WhatsApp green */
-      margin-left: 10px;
-      width: auto;
-      padding: 12px 20px;
-    }
-
-    .share-btn:hover { background: #20b858; }
-
-    .add-item-btn {
-      background: linear-gradient(to right, var(--green-med), var(--green-dark));
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      font-size: 1.15rem;
-      padding: 18px;
-      margin: 24px 0 40px;
-      width: 100%;
-    }
-
-    .items-section { margin: 24px 0; }
-
-    .item-row {
-      background: #1a1a1a;
-      border: 1px solid #444;
-      border-radius: 12px;
-      padding: 24px;
-      margin: 20px 0;
-      position: relative;
-      transition: all 0.2s;
-    }
-
-    .item-row:hover {
-      border-color: var(--gold);
-      box-shadow: 0 4px 16px rgba(212,175,55,0.1);
-    }
-
-    .remove-btn {
-      position: absolute;
-      top: 16px;
-      right: 16px;
-      background: var(--red);
-      color: white;
-      border: none;
-      border-radius: 50%;
-      width: 32px;
-      height: 32px;
-      font-size: 1.1rem;
-      line-height: 32px;
-      text-align: center;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-
-    .remove-btn:hover { background: #a00; }
-
-    .item-grid {
-      display: grid;
-      grid-template-columns: 3fr 1fr 1fr;
-      gap: 20px;
-      align-items: end;
-    }
-
-    @media (max-width: 600px) {
-      .item-grid { grid-template-columns: 1fr; }
-      .btn-group { display: flex; flex-direction: column; gap: 8px; }
-    }
-
-    .btn-group {
-      display: flex;
-      gap: 12px;
-      margin-top: 12px;
-      flex-wrap: wrap;
-    }
-
-    #summary {
-      font-size: 1.4rem;
-      font-weight: bold;
-      text-align: center;
-      margin: 32px 0;
-      padding: 20px;
-      background: #1a1a1a;
-      border: 1px solid #444;
-      border-radius: 12px;
-    }
-
-    .order-item {
-      background: #1a1a1a;
-      border: 1px solid #333;
-      border-radius: 12px;
-      padding: 24px;
-      margin-bottom: 24px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-    }
-
-    .feedback {
-      padding: 16px;
-      margin: 16px 0;
-      border-radius: 10px;
-      text-align: center;
-      font-weight: bold;
-      font-size: 1.1rem;
-    }
-
-    .success { background: #004d00; color: #90ee90; }
-    .error   { background: #600; color: #ff9999; }
-
-    #businessSettings {
-      display: none;
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.8);
-      z-index: 1000;
-      justify-content: center;
-      align-items: center;
-    }
-
-    #businessForm {
-      background: var(--card);
-      border-radius: 16px;
-      padding: 32px;
-      width: 90%;
-      max-width: 500px;
-      box-shadow: var(--shadow);
-      max-height: 90vh;
-      overflow-y: auto;
-    }
-
-    #closeSettings {
-      background: var(--red);
-      width: auto;
-      padding: 12px 24px;
-    }
-
-    #logoPreview {
-      max-width: 150px;
-      max-height: 150px;
-      margin: 12px auto;
-      display: block;
-      border-radius: 8px;
-      border: 1px solid #444;
-    }
-  </style>
 </head>
 <body>
 
@@ -366,7 +71,7 @@
         <option>Paid - Card</option>
       </select>
 
-      <button type="submit">Save Order</button>
+      <button type="submit" class="save-order-btn">Save Order</button>
 
       <div id="feedback" class="feedback"></div>
     </form>
@@ -374,9 +79,31 @@
 
   <div class="card">
     <h2>Saved Orders</h2>
-    <p id="totalRevenue" style="font-size:1.2rem; margin-bottom:20px;">Total Revenue: J$0.00 | Orders: 0</p>
-    <button onclick="exportCSV()" style="background:#1e90ff; width:auto; padding:14px 28px;">Export All to CSV</button>
-    <div id="orders-list" style="margin-top:32px;"></div>
+    <p id="totalRevenue" class="total-revenue">Total Revenue: J$0.00 | Orders: 0</p>
+    <button onclick="exportCSV()" class="export-btn">Export All to CSV</button>
+    <div id="orders-list" class="orders-list"></div>
+  </div>
+</div>
+
+
+<!-- Welcome Beta Modal -->
+<div id="welcomeModal" class="welcome-modal" aria-hidden="true">
+  <div class="welcome-card">
+    <h2>Welcome to Seller Tracker Beta ✨</h2>
+    <p class="welcome-copy">Be the first to get premium updates. Join our star beta list with your email.</p>
+    <form id="betaSignupForm" class="beta-signup-form">
+      <label for="betaName">Name</label>
+      <input type="text" id="betaName" placeholder="Your name">
+
+      <label for="betaEmail">Email *</label>
+      <input type="email" id="betaEmail" placeholder="you@example.com" required>
+
+      <div class="welcome-actions">
+        <button type="submit" class="welcome-submit-btn">Join Beta</button>
+        <button type="button" id="welcomeDismiss" class="welcome-dismiss-btn">Maybe Later</button>
+      </div>
+      <p id="betaSignupFeedback" class="beta-signup-feedback"></p>
+    </form>
   </div>
 </div>
 
@@ -384,7 +111,7 @@
 <div id="businessSettings">
   <div id="businessForm">
     <h2>Business Information</h2>
-    <p style="color:#aaa; margin-bottom:24px;">This appears on every receipt PDF</p>
+    <p class="settings-hint">This appears on every receipt PDF</p>
 
     <label>Business Name</label>
     <input type="text" id="bizName" placeholder="Your Business Name">
@@ -416,7 +143,7 @@
 
     <label>Upload Logo (PNG/JPG)</label>
     <input type="file" id="bizLogoUpload" accept="image/*">
-    <img id="logoPreview" src="" alt="Logo Preview" style="display:none; max-width:150px; margin:12px auto; border-radius:8px; border:1px solid #444;">
+    <img id="logoPreview" src="" alt="Logo Preview">
 
     <label>Extra Receipt Note / Recommendation</label>
     <textarea id="bizNote" rows="2" placeholder="Thank you for your order!"></textarea>
@@ -426,314 +153,7 @@
   </div>
 </div>
 
-<script>
-  const { jsPDF } = window.jspdf;
-  let orders = JSON.parse(localStorage.getItem('jamaicaSalesOrders')) || [];
-  let businessInfo = JSON.parse(localStorage.getItem('businessInfo')) || {
-    name: '',
-    email: '',
-    social: '',
-    socialPlatform: '',
-    areaCode: '+1-876-',
-    phone: '',
-    logoData: '',
-    note: 'Thank you for your order!'
-  };
+  <script src="app.js"></script>
 
-  // Load saved business info into form
-  document.getElementById('bizName').value = businessInfo.name || '';
-  document.getElementById('bizEmail').value = businessInfo.email || '';
-  document.getElementById('bizSocial').value = businessInfo.social ? businessInfo.social.replace(/^@/, '') : '';
-  document.getElementById('bizSocialPlatform').value = businessInfo.socialPlatform || '';
-  document.getElementById('bizAreaCode').value = businessInfo.areaCode || '+1-876-';
-  document.getElementById('bizPhone').value = businessInfo.phone ? businessInfo.phone.replace(/\D/g, '').slice(businessInfo.areaCode.replace(/\D/g, '').length) : '';
-  document.getElementById('bizNote').value = businessInfo.note || '';
-
-  // Update prefix displays
-  function updatePhonePrefixes() {
-    const code = businessInfo.areaCode || '+1-876-';
-    document.getElementById('customerPhonePrefix').textContent = code;
-    document.getElementById('bizPhonePrefix').textContent = code;
-  }
-  updatePhonePrefixes();
-
-  // Show preview if logo exists
-  if (businessInfo.logoData) {
-    document.getElementById('logoPreview').src = businessInfo.logoData;
-    document.getElementById('logoPreview').style.display = 'block';
-  }
-
-  // Auto-format phone inputs
-  function formatPhone(input) {
-    let value = input.value.replace(/\D/g, '');
-    if (value.length > 7) value = value.slice(0, 7);
-
-    let formatted = '';
-    if (value.length > 0) {
-      formatted = value.slice(0, 3);
-      if (value.length > 3) formatted += '-' + value.slice(3);
-    }
-
-    input.value = formatted;
-  }
-
-  document.getElementById('customerPhone').addEventListener('input', function() {
-    formatPhone(this);
-  });
-
-  document.getElementById('bizPhone').addEventListener('input', function() {
-    formatPhone(this);
-  });
-
-  // Handle logo upload
-  document.getElementById('bizLogoUpload').addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = function(event) {
-      const dataUrl = event.target.result;
-      document.getElementById('logoPreview').src = dataUrl;
-      document.getElementById('logoPreview').style.display = 'block';
-      businessInfo.logoData = dataUrl;
-    };
-    reader.readAsDataURL(file);
-  });
-
-  function saveBusinessInfo() {
-    let socialHandle = document.getElementById('bizSocial').value.trim();
-    if (socialHandle && !socialHandle.startsWith('@')) {
-      socialHandle = '@' + socialHandle;
-    }
-
-    const areaCode = document.getElementById('bizAreaCode').value.trim() || '+1-876-';
-
-    businessInfo = {
-      name: document.getElementById('bizName').value.trim() || '',
-      email: document.getElementById('bizEmail').value.trim() || '',
-      social: socialHandle,
-      socialPlatform: document.getElementById('bizSocialPlatform').value || '',
-      areaCode: areaCode,
-      phone: document.getElementById('bizPhone').value.trim() ? areaCode + document.getElementById('bizPhone').value.trim() : '',
-      logoData: businessInfo.logoData || '',
-      note: document.getElementById('bizNote').value.trim() || 'Thank you for your order!'
-    };
-    localStorage.setItem('businessInfo', JSON.stringify(businessInfo));
-
-    updatePhonePrefixes();
-
-    alert('Business information saved!');
-    document.getElementById('businessSettings').style.display = 'none';
-  }
-
-  function saveOrders() {
-    localStorage.setItem('jamaicaSalesOrders', JSON.stringify(orders));
-    updateDashboard();
-    renderOrders();
-  }
-
-  function updateDashboard() {
-    let total = orders.reduce((sum, o) => sum + o.total, 0);
-    document.getElementById('totalRevenue').textContent = 
-      `Total Revenue: J$${total.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')} | Orders: ${orders.length}`;
-  }
-
-  function renderOrders() {
-    const list = document.getElementById('orders-list');
-    list.innerHTML = '';
-    orders.forEach((order, index) => {
-      const div = document.createElement('div');
-      div.className = 'order-item';
-      div.innerHTML = `
-        <strong>Order #${index+1} - ${order.date}</strong><br>
-        Customer: ${order.customerName}<br>
-        Phone: ${order.customerPhone}<br>
-        Platform: ${order.platform} | Status: ${order.paymentStatus}<br>
-        Total: J$${order.total.toFixed(2)}<br>
-        <div class="btn-group">
-          <button onclick="generatePDF(${index})" style="background:var(--green-med);">Download PDF</button>
-          <button class="share-btn" onclick="shareReceipt(${index})">Share Receipt</button>
-        </div>
-      `;
-      list.appendChild(div);
-    });
-  }
-
-  async function shareReceipt(index) {
-    const order = orders[index];
-    const doc = new jsPDF();
-    let y = 20;
-
-    if (businessInfo.logoData) {
-      try {
-        doc.addImage(businessInfo.logoData, 'PNG', 80, y, 50, 50);
-        y += 55;
-      } catch (e) {}
-    }
-
-    doc.setFontSize(18);
-    doc.setTextColor(0, 100, 0);
-    doc.text(businessInfo.name || 'Business Name', 105, y, { align: "center" });
-    y += 10;
-    doc.setFontSize(10);
-    doc.setTextColor(0);
-    if (businessInfo.email) doc.text(`Email: ${businessInfo.email}`, 105, y, { align: "center" });
-    if (businessInfo.phone) doc.text(`WhatsApp: ${businessInfo.phone}`, 105, y += 6, { align: "center" });
-    if (businessInfo.social) {
-      const platform = businessInfo.socialPlatform || 'social media';
-      doc.text(`Follow us on ${platform}: ${businessInfo.social}`, 105, y += 6, { align: "center" });
-    }
-    y += 10;
-
-    doc.setFontSize(16);
-    doc.text("Receipt", 105, y, { align: "center" });
-    y += 12;
-
-    doc.setFontSize(12);
-    doc.text(`Order #${index+1} - ${order.date}`, 20, y);
-    y += 10;
-    doc.text(`Customer: ${order.customerName}`, 20, y);
-    doc.text(`Phone: ${order.customerPhone}`, 20, y += 7);
-    doc.text(`Platform: ${order.platform}`, 20, y += 7);
-    if (order.notes) doc.text(`Notes: ${order.notes}`, 20, y += 7);
-    y += 12;
-
-    doc.text("Items:", 20, y);
-    y += 8;
-    order.items.forEach(item => {
-      doc.text(`${item.qty} × ${item.name} @ J$${item.price.toFixed(2)} = J$${(item.qty * item.price).toFixed(2)}`, 25, y);
-      y += 8;
-    });
-
-    y += 8;
-    doc.text(`Subtotal: J$${order.subtotal.toFixed(2)}`, 20, y);
-    doc.text(`Delivery: J$${order.deliveryFee.toFixed(2)}`, 20, y += 8);
-    doc.setFontSize(14);
-    doc.setTextColor(212, 175, 55);
-    doc.text(`TOTAL: J$${order.total.toFixed(2)}`, 20, y += 10);
-
-    doc.setFontSize(10);
-    doc.setTextColor(0);
-    let receiptNote = businessInfo.note || 'Thank you for your order!';
-    if (businessInfo.social) {
-      const platform = businessInfo.socialPlatform || 'social media';
-      receiptNote = `Thank you! Follow us on ${platform} ${businessInfo.social} for more.`;
-    }
-    doc.text(receiptNote, 105, y += 15, { align: "center" });
-
-    const pdfBlob = doc.output('blob');
-    const pdfFile = new File([pdfBlob], `receipt_${index+1}.pdf`, { type: 'application/pdf' });
-
-    if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
-      try {
-        await navigator.share({
-          files: [pdfFile],
-          title: `Receipt #${index+1}`,
-          text: `Order receipt for ${order.customerName}`
-        });
-      } catch (err) {
-        // Fallback to download if share fails/cancelled
-        doc.save(`receipt_${index+1}.pdf`);
-      }
-    } else {
-      // Fallback for browsers without share API
-      doc.save(`receipt_${index+1}.pdf`);
-    }
-  }
-
-  function addItemRow() {
-    const container = document.getElementById('items-container');
-    const row = document.createElement('div');
-    row.className = 'item-row';
-    row.innerHTML = `
-      <button type="button" class="remove-btn" onclick="this.parentElement.remove(); updateSummary()">X</button>
-
-      <label>Item name / description</label>
-      <input type="text" placeholder="e.g. Product name" class="item-name">
-
-      <div class="item-grid">
-        <div>
-          <label>Qty</label>
-          <input type="number" placeholder="1" value="1" min="1" class="item-qty">
-        </div>
-        <div>
-          <label>Price (JMD)</label>
-          <input type="number" placeholder="0" value="0" min="0" step="0.01" class="item-price">
-        </div>
-      </div>
-    `;
-    container.appendChild(row);
-    updateSummary();
-  }
-
-  function updateSummary() {
-    let subtotal = 0;
-    document.querySelectorAll('.item-row').forEach(row => {
-      const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
-      const price = parseFloat(row.querySelector('.item-price').value) || 0;
-      subtotal += qty * price;
-    });
-    const delivery = parseFloat(document.getElementById('deliveryFee').value) || 0;
-    const total = subtotal + delivery;
-    document.getElementById('summary').textContent = `Subtotal: J$${subtotal.toFixed(2)} | Total: J$${total.toFixed(2)}`;
-  }
-
-  document.getElementById('orderForm').addEventListener('submit', e => {
-    e.preventDefault();
-
-    const feedback = document.getElementById('feedback');
-
-    const items = [];
-    document.querySelectorAll('.item-row').forEach(row => {
-      const name = row.querySelector('.item-name').value.trim();
-      const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
-      const price = parseFloat(row.querySelector('.item-price').value) || 0;
-      if (name && qty > 0) items.push({name, qty, price});
-    });
-
-    if (!document.getElementById('customerName').value.trim()) {
-      feedback.textContent = "Customer name is required";
-      feedback.className = "feedback error";
-      return;
-    }
-    if (items.length === 0) {
-      feedback.textContent = "Add at least one item";
-      feedback.className = "feedback error";
-      return;
-    }
-
-    const areaCode = businessInfo.areaCode || '+1-876-';
-    const customerPhoneFull = areaCode + document.getElementById('customerPhone').value.trim();
-
-    const order = {
-      date: new Date().toLocaleString('en-JM'),
-      customerName: document.getElementById('customerName').value.trim(),
-      customerPhone: customerPhoneFull,
-      platform: document.getElementById('platform').value,
-      notes: document.getElementById('notes').value.trim(),
-      paymentStatus: document.getElementById('paymentStatus').value,
-      deliveryFee: parseFloat(document.getElementById('deliveryFee').value) || 0,
-      items,
-      subtotal: items.reduce((s, i) => s + i.qty * i.price, 0),
-      total: items.reduce((s, i) => s + i.qty * i.price, 0) + (parseFloat(document.getElementById('deliveryFee').value) || 0)
-    };
-
-    orders.push(order);
-    saveOrders();
-
-    e.target.reset();
-    document.getElementById('items-container').innerHTML = '';
-    addItemRow();
-
-    feedback.textContent = 'Order saved successfully!';
-    feedback.className = 'feedback success';
-  });
-
-  // Init
-  addItemRow();
-  updateDashboard();
-  renderOrders();
-  document.querySelectorAll('input[type=number]').forEach(el => el.addEventListener('input', updateSummary));
-</script>
 </body>
 </html>
