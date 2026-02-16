@@ -59,23 +59,6 @@
 
     .menu-btn:hover { background: #1c86ee; }
 
-    .admin-link {
-      display: inline-block;
-      margin-top: -4px;
-      color: #93c5fd;
-      text-decoration: none;
-      font-weight: 700;
-      border: 1px solid #334155;
-      background: #0f172a;
-      padding: 8px 12px;
-      border-radius: 9px;
-    }
-
-    .admin-link:hover {
-      color: #bfdbfe;
-      border-color: #475569;
-    }
-
     .card {
       background: var(--card);
       border: 1px solid var(--border);
@@ -356,70 +339,6 @@
     .error   { background: #600; color: #ff9999; }
 
 
-    .welcome-modal {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.75);
-      z-index: 1100;
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
-    }
-
-    .welcome-card {
-      width: 100%;
-      max-width: 520px;
-      background: linear-gradient(165deg, #121212, #1a1a1a);
-      border: 1px solid #3a3a3a;
-      border-radius: 18px;
-      padding: 28px;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-    }
-
-    .welcome-copy {
-      color: #cfcfcf;
-      margin: 10px 0 18px;
-    }
-
-    .beta-signup-form {
-      display: grid;
-      gap: 8px;
-    }
-
-    .welcome-actions {
-      display: flex;
-      gap: 10px;
-      margin-top: 14px;
-      flex-wrap: wrap;
-    }
-
-    .welcome-submit-btn,
-    .welcome-dismiss-btn {
-      border: none;
-      border-radius: 10px;
-      padding: 12px 18px;
-      font-weight: 700;
-      cursor: pointer;
-      color: #fff;
-    }
-
-    .welcome-submit-btn {
-      background: linear-gradient(135deg, #0ea5e9, #2563eb);
-      box-shadow: 0 8px 18px rgba(37,99,235,0.3);
-    }
-
-    .welcome-dismiss-btn {
-      background: #2a2a2a;
-      border: 1px solid #4a4a4a;
-    }
-
-    .beta-signup-feedback {
-      min-height: 24px;
-      margin-top: 6px;
-      font-weight: 600;
-    }
-
     #businessSettings {
       display: none;
       position: fixed;
@@ -446,6 +365,8 @@
       width: auto;
       padding: 12px 24px;
     }
+
+
 
     #logoPreview {
       max-width: 150px;

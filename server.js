@@ -2,8 +2,10 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const { URL } = require('url');
+const os = require('os');
 
 const PORT = process.env.PORT || 3000;
+const HOST = process.env.HOST || '0.0.0.0';
 const ROOT = __dirname;
 const DATA_FILE = path.join(ROOT, 'beta-signups.json');
 const AUTH_USER = 'kxrr1';
@@ -99,6 +101,10 @@ const server = http.createServer(async (req, res) => {
     return res.end();
   }
 
+  if (req.method === 'GET' && url.pathname === '/api/health') {
+    return sendJson(res, 200, { ok: true, service: 'seller-tracker-backend' });
+  }
+
   if (req.method === 'POST' && url.pathname === '/api/signups') {
     try {
       const raw = await collectBody(req);
@@ -142,6 +148,21 @@ const server = http.createServer(async (req, res) => {
   serveStatic(req, res, url.pathname);
 });
 
-server.listen(PORT, () => {
+function getLanIp() {
+  const nets = os.networkInterfaces();
+  for (const iface of Object.values(nets)) {
+    if (!iface) continue;
+    for (const net of iface) {
+      if (net.family === 'IPv4' && !net.internal) return net.address;
+    }
+  }
+  return null;
+}
+
+server.listen(PORT, HOST, () => {
+  const lanIp = getLanIp();
   console.log(`Seller Tracker running on http://localhost:${PORT}`);
+  if (lanIp) {
+    console.log(`App page (same network): http://${lanIp}:${PORT}/index.html`);
+  }
 });
